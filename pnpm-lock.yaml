@@ -308,7 +308,13 @@ importers:
       '@jobhunter/shared-utils':
         specifier: workspace:*
         version: link:../../packages/shared-utils
+      drizzle-orm:
+        specifier: ^0.44.6
+        version: 0.44.7(postgres@3.4.9)
     devDependencies:
+      esbuild:
+        specifier: ^0.25.0
+        version: 0.25.12
       tsx:
         specifier: ^4.20.6
         version: 4.23.13

@@ -2,7 +2,11 @@ name: jobhunter
 
 services:
   postgres:
-    image: postgres:18-alpine
+    # Not plain postgres:18-alpine: docker/postgres/init/01-roles-extensions-grants.sql
+    # runs `CREATE EXTENSION vector` (pgvector), which the stock image does not
+    # bundle -- that CREATE EXTENSION would fail on first boot. pgvector/pgvector:pg18
+    # is the official pgvector-maintained image, built on the same postgres:18 base.
+    image: pgvector/pgvector:pg18
     container_name: jobhunter-postgres
     restart: unless-stopped
     environment:

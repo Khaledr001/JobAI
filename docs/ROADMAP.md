@@ -8,7 +8,7 @@ This file tracks status only.
 | 0 | Scaffold | ✅ done (`pnpm verify` green; see note) |
 | 1 | Claim ledger + My Work ⭐ | ✅ done (see note) |
 | 2 | Anti-fabrication validator | ✅ done (see note) |
-| 3 | Seed + ingest + conflicts | ⬜ todo |
+| 3 | Seed + ingest + conflicts | ✅ done (see note) |
 | 4 | LLM layer + first AI feature (gap analysis) | ⬜ todo |
 | 5 | Job ingestion (Greenhouse/Lever → Adzuna → free feeds) | ⬜ todo |
 | 6 | Matching (deterministic + LLM explanation) | ⬜ todo |
@@ -60,6 +60,48 @@ correctly failed 20 of 21 checks, and `verify-validator-mutations` failed
 all 7 pass-checks — proving neither is a vacuous gate. Two real design
 issues surfaced only by writing the fixtures, not by reading the code — see
 D17 and D18 in `docs/DECISIONS.md`.
+
+**Note on Phase 3**: `tools/ingest` runs for real against the six real
+source files/repos on this machine (resume.md, the portfolio, work-log.txt,
+both dated `PROJECT_DOCUMENTATION.md` copies, and three git repos across
+two Inventra epochs), not fixtures. Real output, after `finalize`:
+4 experiences, 6 projects (Inventra and Mazarini correctly consolidated
+across sources that name them differently — see D22/D23), 243 work
+entries, 114 confirmed claims (91 `attested`, 23 `documented`), 23
+emittable, 4 correctly left unconfirmed. All three conflicts PLAN.md
+predicted as reachable from these sources fired exactly as designed:
+
+- **Mazarini module count** — a genuine *four-way* disagreement (PLAN.md
+  expected three): resume.md (5+), the portfolio (15+), and two dated
+  copies of `PROJECT_DOCUMENTATION.md` that disagree with each other about
+  a milestone already in the past by the time either was written (27, then
+  32). Correctly classified `definition` (not `count`) since "modules" and
+  "content_types" are different units, and blocks emission.
+- **Telemedicine role** — real, dated work in the portfolio, absent from
+  resume.md entirely. `coverage_gap`, non-blocking.
+- **Igala** — a real project (work-log.txt, a live project directory)
+  published nowhere. `coverage_gap`, non-blocking.
+
+The two conflicts PLAN.md said would *not* yet materialize (the 30%-vs-40%
+latency claim, the four-way Bizreflex end date) correctly did not: both
+depend on PDF/LinkedIn sources this phase deliberately doesn't ingest, and
+this system treats that as working as intended, not a gap.
+
+Running it for real, against real data, surfaced four bugs no dry-run or
+type-check caught — see D20–D24 in `docs/DECISIONS.md`: a Docker image
+missing the pgvector extension it needs, a nested-transaction self-deadlock
+that hung a live run for 30 minutes under `poolMax=1`, an em-dash/hyphen
+split bug that truncated "Non-Profit Organization" to "Non", and the
+operator's real email addresses ending up in a tracked documentation file
+(caught by `check-privacy.mjs` itself, then fixed by moving the git-identity
+allowlist into `.env`). A cross-source entity-resolution gap (the same
+employer named "Bright Technology Limited" in one source and "Bright
+Technology Ltd" in another, creating a duplicate `experiences` row) was
+found and fixed the same way project-slug aliasing already fixed Inventra;
+the one duplicate row already written was cleaned up by *rejecting* the
+duplicate claim and deleting the redundant experience row — not by deleting
+evidence, which the `evidence_append_only` trigger correctly refused even
+for a Postgres superuser.
 
 Known gap, deliberately not blocking phase progression: Phase 1's
 "Add-Work UI" deliverable (a page in `apps/web` to add a work entry and see

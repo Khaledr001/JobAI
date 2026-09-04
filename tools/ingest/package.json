@@ -13,9 +13,11 @@
   "dependencies": {
     "@jobhunter/db": "workspace:*",
     "@jobhunter/shared-types": "workspace:*",
-    "@jobhunter/shared-utils": "workspace:*"
+    "@jobhunter/shared-utils": "workspace:*",
+    "drizzle-orm": "^0.44.6"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
