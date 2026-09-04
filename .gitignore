@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+coverage/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# -----------------------------------------------------------------------------
+# Personal data. This section exists because a sibling repo on this machine
+# (ISP Management) has a committed .env sitting next to its .env.example and a
+# database dump in its working tree. See docs/PRIVACY.md and scripts/check-privacy.mjs
+# -----------------------------------------------------------------------------
+data/
+!data/.gitkeep
+*.pdf
+*.docx
+*.doc
+!docs/**/*.pdf
+
+*.dump
+*.sql.gz
+*.backup
+
+# Playwright authenticated sessions -- these are bearer credentials.
+**/storage-state/*
+!**/storage-state/.gitkeep
+**/*.storage-state.json
+playwright/.auth/
+
+# LLM cassettes recorded against the real profile rather than a synthetic one
+packages/llm/cassettes/**/*.real.json
+.privacy-patterns.local

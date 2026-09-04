@@ -1,0 +1,83 @@
+# Patterns
+
+## Adding an API module
+
+Copy the shape of the reference module named in
+`apps/api/src/modules/README.md`. Flat folder, five files, no exceptions.
+Controllers hold no logic. Services throw `AppError` (see below), never
+`HttpException` — a service is called from a queue processor as often as
+from a controller, and HTTP status codes are meaningless there.
+
+## Errors
+
+`AppError` + a shared `ERROR_CODES` map in `shared-utils`; a single
+`AllExceptionsFilter` maps codes to HTTP statuses at the edge. A service
+never imports `@nestjs/common`'s HTTP exceptions.
+
+## Claims and citations
+
+`packages/claims` is the `Money`-equivalent slot: the one place that knows
+what "verified" means. Never reimplement evidence/verification logic inline
+in a module — import it.
+
+## Database
+
+- `casing: "snake_case"` in `drizzle.config.ts`; camelCase in TypeScript.
+  Numerics arrive from Postgres as strings — don't assume `number`.
+- Two roles: `jobhunter_migrator` (owns tables, runs migrations) and
+  `jobhunter_app` (runtime, restricted by column-level grants). Never point
+  `DATABASE_URL` at the migrator outside a migration script.
+- `packages/db/sql/*.sql` is the hand-written escape hatch for anything
+  drizzle-kit can't generate (triggers, views, RLS-shaped grants, partitions
+  later). Re-applied by `packages/db/scripts/migrate.ts` after every
+  migration — idempotent by construction.
+
+## Queues and workers
+
+Five queues (`ingest`, `llm`, `embed`, `project`, `assist`), each scoped to
+one external resource so rate-limiting has one place to live. Use
+`@nestjs/bullmq` (DI-managed, participates in `enableShutdownHooks()`) and
+BullMQ repeatable jobs for scheduling — never `@nestjs/schedule`, which fires
+twice across the api+worker process pair.
+
+## Prompts and cassettes
+
+A prompt is code: it lives in `apps/api/src/modules/<feature>/prompts/`, gets
+reviewed like any other diff, and has a recorded cassette. `LLM_MODE=replay`
+in tests and CI; a cassette miss is a **test failure with the re-record
+command in the message**, never a silent fallthrough to a live call.
+
+## Testing
+
+Vitest, colocated `*.spec.ts`. `packages/claims` and `packages/matching` are
+pure — their specs need no database, no network, and run in the default
+`pnpm test`.
+
+## Gotchas
+
+- **`apps/api` uses `@nestjs/cli` (`nest build` / `nest start --watch`) for
+  its dev server and build, not `tsx`.** `tsx` transpiles via esbuild, which
+  strips decorators without emitting `design:paramtypes` metadata — every
+  constructor-injected provider resolves to `undefined` at runtime with no
+  compile-time warning (confirmed: `nest start` under `tsx watch` throws
+  `Cannot read properties of undefined` the moment a service injects
+  `ConfigService`). This is the same class of problem `apps/api/vitest.config.ts`
+  already works around with `unplugin-swc` for tests — `nest build`/`nest
+  start` solve it for dev/build by compiling through `tsc` instead. Every
+  other package (`packages/db/scripts`, `tools/ingest`, `apps/assist`) has no
+  NestJS DI, so plain `tsx` is fine there.
+- `tsconfig.base.json` has `incremental: false` for a reason — see the
+  comment in that file before turning it on.
+- The skill/technology matcher needs its own text normalizer, one that
+  preserves `#`, `+`, `.` (`C#`, `C++`, `.NET`, `Node.js`). A generic
+  search-key normalizer that strips punctuation will silently merge `C#`
+  into `C`.
+- HNSW filtered vector search returns `ef_search` candidates *then* applies
+  the `WHERE` — a selective filter can silently return fewer rows than
+  asked. See `docs/DATABASE.md` before writing a filtered embedding query.
+
+## Frontend
+
+Next.js App Router, client components + TanStack Query against
+`apps/web/src/lib/api-client.ts`. No server actions — matches the reference
+repo's convention, and keeps every data access path visible in one client.

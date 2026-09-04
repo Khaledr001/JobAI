@@ -1,0 +1,46 @@
+{
+  "name": "job-hunter",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.2.2",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
+    "db:generate": "pnpm --filter @jobhunter/db generate",
+    "db:migrate": "pnpm --filter @jobhunter/db migrate",
+    "db:seed": "pnpm --filter @jobhunter/db seed",
+    "db:studio": "pnpm --filter @jobhunter/db studio",
+    "db:reset": "pnpm --filter @jobhunter/db reset",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:logs": "docker compose logs -f",
+    "infra:nuke": "docker compose down -v",
+    "ingest": "pnpm --filter @jobhunter/ingest start",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check:privacy": "node scripts/check-privacy.mjs",
+    "verify:no-fabrication": "node scripts/verify-no-fabrication.mjs",
+    "verify:validator": "node scripts/verify-validator-mutations.mjs",
+    "verify:claims-integrity": "node scripts/verify-claims-integrity.mjs",
+    "verify": "pnpm check:boundaries && pnpm check:privacy && pnpm typecheck && pnpm lint && pnpm test && pnpm verify:no-fabrication && pnpm verify:validator && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.4",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.46.0"
+  }
+}

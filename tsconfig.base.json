@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": false,
+    /**
+     * OFF, deliberately.
+     *
+     * With `incremental: true`, a `.tsbuildinfo` from a previous successful
+     * build can make `tsc` believe there is nothing to do, so `typecheck &&
+     * build` silently emits an EMPTY `dist` with a green exit code -- in
+     * exactly the order `pnpm verify` runs tasks. This bit everyone at least
+     * once before this comment existed. Leave it false.
+     */
+    "incremental": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    /**
+     * A resume bullet's provenance is an array index into a claim list. An
+     * out-of-bounds read that TypeScript lets through becomes `undefined`
+     * stringified into a PDF sent to an employer.
+     */
+    "noUncheckedIndexedAccess": true,
+    /**
+     * `{ evidenceUrl?: string }` and `{ evidenceUrl: string | undefined }` are
+     * different claims about the world: the first says "unknown", the second
+     * says "known to be absent". The anti-fabrication validator branches on
+     * that distinction, so the type system has to preserve it.
+     */
+    "exactOptionalPropertyTypes": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false
+  },
+  "exclude": ["node_modules", "dist", ".next", ".turbo", "coverage"]
+}

@@ -1,0 +1,11 @@
+**/dist
+**/.next
+**/.turbo
+**/coverage
+pnpm-lock.yaml
+packages/llm/cassettes
+packages/sources/fixtures
+packages/matching/golden
+packages/claims/fixtures
+docs/
+data/

@@ -1,0 +1,19 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tools/*"
+
+# pnpm >=10 blocks lifecycle (postinstall) scripts by default. These compile
+# native bindings or fetch a platform binary at install time.
+allowBuilds:
+  "@swc/core": true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+  # Downloads browser binaries. Only apps/assist needs this; the API image is
+  # built with --filter=@jobhunter/api... and never resolves this package.
+  playwright: true
+  "@parcel/watcher": true
+
+  # Analytics ping on install. No functional purpose here.
+  "@scarf/scarf": false

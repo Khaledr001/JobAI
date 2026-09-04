@@ -1,0 +1,94 @@
+name: jobhunter
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: jobhunter-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jobhunter_migrator
+      POSTGRES_PASSWORD: migrator_dev_password
+      POSTGRES_DB: jobhunter
+      # Deterministic collation. Company and skill names are sorted and
+      # compared for dedupe; a collation that differs between this machine
+      # and the VPS makes "the same job" a different job.
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en-US --encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobhunter_migrator -d jobhunter"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    command:
+      - "postgres"
+      # One operator, two app processes (api + worker roles). 200 was sized
+      # for a multi-tenant POS terminal fleet; this needs far less.
+      - "-c"
+      - "max_connections=50"
+      - "-c"
+      - "shared_buffers=256MB"
+
+  redis:
+    image: redis:8-alpine
+    container_name: jobhunter-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    # appendonly: a queue that loses its jobs on restart loses a half-finished
+    # application run and the operator never learns which one.
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: jobhunter-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: jobhunter
+      MINIO_ROOT_PASSWORD: jobhunter_dev_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: ["server", "/data", "--console-address", ":9001"]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: creates the buckets, then exits.
+  #
+  # Both buckets are private -- everything here is a resume with a home
+  # address and a phone number on it. Access is always a presigned URL with a
+  # short TTL, never an anonymous public prefix.
+  minio-init:
+    image: minio/mc:latest
+    container_name: jobhunter-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 jobhunter jobhunter_dev_password &&
+      mc mb --ignore-existing local/jobhunter-documents &&
+      mc mb --ignore-existing local/jobhunter-sources &&
+      mc version enable local/jobhunter-documents &&
+      echo 'MinIO buckets ready (private, versioned)'
+      "
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
