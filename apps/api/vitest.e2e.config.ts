@@ -20,6 +20,8 @@ export default defineConfig({
     env: {
       DATABASE_URL: "postgres://test:test@127.0.0.1:1/test",
       REDIS_URL: "redis://127.0.0.1:1",
+      JWT_ACCESS_SECRET: "test-only-access-secret-at-least-32-chars",
+      JWT_REFRESH_SECRET: "test-only-refresh-secret-at-least-32-chars",
     },
   },
   plugins: [

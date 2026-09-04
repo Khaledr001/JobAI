@@ -30,11 +30,18 @@ const EnvSchema = z.object({
   THROTTLE_TTL: z.coerce.number().int().positive().default(60),
   THROTTLE_LIMIT: z.coerce.number().int().positive().default(120),
 
+  // Consumed only by packages/db/scripts/seed.ts, which reads process.env
+  // directly (it runs outside Nest's DI/config system) -- not read here,
+  // kept optional so the API's own boot never depends on them.
   OPERATOR_EMAIL: z.string().email().optional(),
   OPERATOR_PASSWORD_HASH: z.string().optional(),
-  JWT_ACCESS_SECRET: z.string().min(1).optional(),
+
+  // Required, no default: a hardcoded fallback secret is a real
+  // vulnerability, and JWT_ACCESS_TTL/JWT_REFRESH_TTL below intentionally
+  // keep defaults since a short/wrong TTL is inconvenient, not dangerous.
+  JWT_ACCESS_SECRET: z.string().min(32),
   JWT_ACCESS_TTL: z.string().default("30m"),
-  JWT_REFRESH_SECRET: z.string().min(1).optional(),
+  JWT_REFRESH_SECRET: z.string().min(32),
   JWT_REFRESH_TTL: z.string().default("30d"),
   BCRYPT_ROUNDS: z.coerce.number().int().positive().default(12),
 

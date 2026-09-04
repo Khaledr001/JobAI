@@ -38,12 +38,32 @@ Will disable each validator rule in turn and assert the fixture corpus
 detects it (a rule no fixture depends on is dead code and fails the build).
 Same stub status as above.
 
-## `verify-claims-integrity.mjs` (stub — Phase 1)
+## `verify-claims-integrity.mjs` (live — proves the following against real Postgres)
 
-Will run against real Postgres in CI: as the app role, attempt to promote a
-claim, delete evidence, or insert a span citing a non-emittable claim — each
-must fail. Refuses to run at all if `DATABASE_URL` points at the migrator
-role (the vacuity guard). Needs the Phase 1 schema and grants to exist first.
+Requires migrations + `sql/*.sql` applied first (`pnpm db:migrate`). Refuses
+to run at all if `DATABASE_URL` points at the migrator role (the vacuity
+guard — mirrors the reference repo's `verify-rls.mjs`). As the app role,
+inside a transaction with the RLS session variable set (exactly what
+`runAsOwner` does):
+
+1. `UPDATE claims SET verification = ...` fails on permission
+2. `UPDATE claims SET confirmed_at = ...` fails on permission
+3. `promote_claim()` on a claim with zero evidence fails
+4. `INSERT INTO evidence` succeeds
+5. `UPDATE`/`DELETE` on `evidence` both fail (grant **and** trigger — two
+   independent mechanisms, see `sql/03-triggers.sql`)
+6. `promote_claim()` on a claim *with* evidence succeeds
+7. the now-confirmed claim appears in `v_emittable_claims`
+8. a transaction that never sets the RLS session variable sees **zero**
+   rows in `claims` — the fail-safe direction, not a silent leak
+
+Document-span citation checks (`document_spans`, which don't exist until
+Phase 8) are not covered here yet; extend this script when that table
+lands, per the same pattern.
+
+Not part of `pnpm verify` — it needs real infrastructure, so it runs in
+CI's separate `invariants` job (see `.github/workflows/ci.yml`), the same
+split the reference repo uses for `verify-rls.mjs`.
 
 ## Cassettes
 

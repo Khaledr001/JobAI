@@ -6,7 +6,7 @@ This file tracks status only.
 | # | Phase | Status |
 |---|---|---|
 | 0 | Scaffold | ✅ done (`pnpm verify` green; see note) |
-| 1 | Claim ledger + My Work ⭐ | ⬜ todo |
+| 1 | Claim ledger + My Work ⭐ | ✅ done (see note) |
 | 2 | Anti-fabrication validator | ⬜ todo |
 | 3 | Seed + ingest + conflicts | ⬜ todo |
 | 4 | LLM layer + first AI feature (gap analysis) | ⬜ todo |
@@ -28,6 +28,23 @@ shell couldn't reach the Docker daemon (a local permissions issue, not a
 config problem: `docker compose config` parses the file correctly). Run
 `pnpm infra:up && pnpm db:migrate` once to confirm Postgres/Redis/MinIO
 actually come up clean on this machine.
+
+**Note on Phase 1**: verified end-to-end against a real, live PostgreSQL 18
+instance (this machine's own `psql`-managed cluster, not the Docker
+service — Docker access was unavailable in that session; the schema is
+identical either way). Concretely proven, not just typechecked: the full
+migration + `sql/*.sql` (grants, RLS, triggers, `promote_claim`,
+`v_emittable_claims`) applied cleanly; all 9 checks in
+`scripts/verify-claims-integrity.mjs` passed; the real API booted, and a
+full HTTP round trip was exercised by hand — login, `GET /profile`, listing
+seeded taxonomy nodes, creating a work entry tagged with two technologies
+and confirming `technology_scores` computed the exact expected
+recency/depth/breadth/composite values, and the full claim lifecycle
+(create → confirm-with-no-evidence correctly rejected → attach evidence →
+confirm succeeds → appears in `v_emittable_claims` → reject). That process
+of actually running it surfaced and fixed two real bugs no unit test caught
+(D15's `SET LOCAL` vs `set_config`, and a DTO silently dropping
+`sourceKind`/`sourceRef`) — see `docs/DECISIONS.md`.
 
 ## Cross-cutting, not phase-bound
 

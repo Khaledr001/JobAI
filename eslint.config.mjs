@@ -36,6 +36,7 @@ export default tseslint.config(
       "tools/*/src/**/*.ts",
       "packages/*/scripts/**/*.ts",
       "apps/*/test/**/*.ts",
+      "apps/*/scripts/**/*.ts",
     ],
     extends: [...tseslint.configs.recommended],
     languageOptions: {

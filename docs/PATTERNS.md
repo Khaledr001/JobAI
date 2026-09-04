@@ -75,6 +75,32 @@ pure — their specs need no database, no network, and run in the default
 - HNSW filtered vector search returns `ef_search` candidates *then* applies
   the `WHERE` — a selective filter can silently return fewer rows than
   asked. See `docs/DATABASE.md` before writing a filtered embedding query.
+- **Setting a session-local RLS variable must go through `set_config(name,
+  value, true)`, never `SET LOCAL name = ${value}` via a driver's tagged
+  template.** `SET` is not an ordinary statement and does not accept a bind
+  parameter in that position — confirmed by running it for real: every
+  single write in the app failed with a Postgres syntax error
+  (`SET LOCAL jobhunter.current_user_id = $1`) until `runAsOwner`
+  (`packages/db/src/context.ts`) was switched to
+  `SELECT set_config('jobhunter.current_user_id', ${ownerId}, true)`.
+  `set_config` is an ordinary function, so it takes the value as a normal,
+  safely-bound argument; its third argument (`true`) is what makes the
+  setting transaction-local, equivalent to `SET LOCAL`. This is the one bug
+  in Phase 1 that unit tests could not catch (they mock the DB layer) — it
+  only surfaced by running a real write against real Postgres.
+- **A transaction's `tx` parameter type must be derived from `Db["transaction"]`,
+  never hand-written as `PgTransaction<any, any, any>`.** A conditional type
+  distributes over a naked `any`, so `PgDatabase`'s internal "is the schema
+  generic present" check collapses into a union that includes its own
+  `DrizzleTypeError` branch, and every `tx.query.<table>` access then fails
+  to typecheck — but only from a *consuming* package, since it still
+  resolves fine inside `packages/db` itself. Use `packages/db`'s exported
+  `Tx` type (`Parameters<Parameters<Db["transaction"]>[0]>[0]`), which
+  always matches `Db` exactly.
+- **`createDb`'s return type must be annotated explicitly**, not left to
+  inference (`PostgresJsDatabase<typeof schema> & { $client: Sql }`).
+  Leaving it inferred risks the schema generic not surviving into the
+  package's emitted `.d.ts`, for the same class of reason as above.
 
 ## Frontend
 

@@ -24,6 +24,11 @@ export const WORK_ENTRY_TYPES = asConst([
 export const WorkEntryTypeSchema = z.enum(WORK_ENTRY_TYPES);
 export type WorkEntryType = z.infer<typeof WorkEntryTypeSchema>;
 
+/**
+ * Declaration order is the comparison order `v_emittable_claims` uses
+ * (`verification >= 'documented'`) — do not reorder without updating that
+ * view's SQL.
+ */
 export const VERIFICATION_LEVELS = asConst([
   "attested",
   "documented",
@@ -32,3 +37,81 @@ export const VERIFICATION_LEVELS = asConst([
 ]);
 export const VerificationSchema = z.enum(VERIFICATION_LEVELS);
 export type Verification = z.infer<typeof VerificationSchema>;
+
+export const EVIDENCE_KINDS = asConst([
+  "git_commit",
+  "git_file_presence",
+  "dependency_manifest",
+  "log_line",
+  "doc_section",
+  "live_url",
+  "employer_reference",
+  "certificate",
+  "attestation",
+]);
+export const EvidenceKindSchema = z.enum(EVIDENCE_KINDS);
+export type EvidenceKind = z.infer<typeof EvidenceKindSchema>;
+
+export const CLAIM_KINDS = asConst([
+  "used_technology",
+  "held_role",
+  "date_range",
+  "metric",
+  "responsibility",
+  "delivered_project",
+]);
+export const ClaimKindSchema = z.enum(CLAIM_KINDS);
+export type ClaimKind = z.infer<typeof ClaimKindSchema>;
+
+export const CONFLICT_KINDS = asConst([
+  "tech_stack",
+  "count",
+  "metric_value",
+  "date_range",
+  "coverage_gap",
+  "duplicate_entity",
+  "definition",
+]);
+export const ConflictKindSchema = z.enum(CONFLICT_KINDS);
+export type ConflictKind = z.infer<typeof ConflictKindSchema>;
+
+export const CONFLICT_STATUSES = asConst([
+  "open",
+  "resolved",
+  "accepted_both",
+  "wont_fix",
+]);
+export const ConflictStatusSchema = z.enum(CONFLICT_STATUSES);
+export type ConflictStatus = z.infer<typeof ConflictStatusSchema>;
+
+export const PROJECT_STATUSES = asConst(["active", "shipped", "archived"]);
+export const ProjectStatusSchema = z.enum(PROJECT_STATUSES);
+export type ProjectStatus = z.infer<typeof ProjectStatusSchema>;
+
+export const TAXONOMY_NODE_KINDS = asConst(["technology", "skill", "concept", "domain"]);
+export const TaxonomyNodeKindSchema = z.enum(TAXONOMY_NODE_KINDS);
+export type TaxonomyNodeKind = z.infer<typeof TaxonomyNodeKindSchema>;
+
+export const TAXONOMY_REVIEW_STATUSES = asConst(["proposed", "canonical", "rejected"]);
+export const TaxonomyReviewStatusSchema = z.enum(TAXONOMY_REVIEW_STATUSES);
+export type TaxonomyReviewStatus = z.infer<typeof TaxonomyReviewStatusSchema>;
+
+export const TAXONOMY_EDGE_RELATIONS = asConst([
+  "implies",
+  "broader_than",
+  "adjacent",
+  "requires",
+  "used_with",
+  "belongs_to_domain",
+]);
+export const TaxonomyEdgeRelationSchema = z.enum(TAXONOMY_EDGE_RELATIONS);
+export type TaxonomyEdgeRelation = z.infer<typeof TaxonomyEdgeRelationSchema>;
+
+/**
+ * The role a work entry plays in establishing a technology's usage —
+ * mirrors `WORK_ENTRY_TYPE_DEPTH`'s intent but at the tag level: an entry
+ * can be a `primary` driver of a technology or merely `incidental` to it.
+ */
+export const TECH_TAG_ROLES = asConst(["primary", "supporting", "incidental"]);
+export const TechTagRoleSchema = z.enum(TECH_TAG_ROLES);
+export type TechTagRole = z.infer<typeof TechTagRoleSchema>;

@@ -18,6 +18,9 @@
     "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist"
   },
+  "dependencies": {
+    "@jobhunter/shared-types": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
