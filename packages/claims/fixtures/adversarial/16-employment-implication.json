@@ -1,0 +1,25 @@
+{
+  "name": "employment-implication",
+  "description": "Phrasing implies an employment/staffing relationship with Google that no held_role claim backs, even though Google is legitimately mentioned as a third-party integration in a delivered_project claim.",
+  "pass": "employmentImplication",
+  "expectedCode": "EMPLOYMENT_IMPLICATION",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "kind": "delivered_project",
+      "subject": "Payments routing integration",
+      "statement": "Built an API integration with Google's Maps platform for the delivery routing project.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Collaborated with Google on API integration for the delivery routing project.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000010"]
+    }
+  ]
+}

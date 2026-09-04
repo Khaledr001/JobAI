@@ -22,21 +22,40 @@ the lockfile. Operator PII patterns (real name/email/phone) are read from an
 **untracked** `.privacy-patterns.local` so the patterns themselves are never
 committed — absent file means skip with a loud warning, not a false pass.
 
-## `verify-no-fabrication.mjs` (stub — Phase 2)
+## `verify-no-fabrication.mjs` (live)
 
-Will load ~20 adversarial fixtures (invented technology, inflated metric,
-JD-echoed requirement, homoglyph seniority upgrade, prompt injection in the
-job description, etc.) and assert `packages/claims`' validator rejects each
-with its specific expected violation code, and the one honest fixture
-passes. Currently exits 0 with a loud "not yet implemented" notice — it is
-not yet a real gate. Do not remove it from `pnpm verify`; implement it in
-Phase 2 instead.
+Loads all 21 fixtures in `packages/claims/fixtures/adversarial/*.json` and
+asserts `validate()` (`packages/claims/src/validator.ts`) rejects each with
+its specific expected violation code — invented technology/employer/degree/
+certification, inflated tenure/outcome/proficiency, an invented team size,
+a JD-mirrored bullet, a dangling/unverified/wrongly-scoped claim citation,
+a plain and a homoglyph ("lеd" with a Cyrillic е) seniority upgrade, a
+zero-width-space-hidden superlative, an implied employment relationship,
+overlapping full-time date ranges, a version mismatch, a prompt injection
+embedded in the job description, and an uncited bullet — plus the one
+honest fixture, which must pass. Runs via `tsx`, importing
+`packages/claims/src` **directly by relative path, not the compiled
+`@jobhunter/claims` package** — this script runs before `build` in
+`pnpm verify`'s pipeline, so `dist/` may not exist yet.
 
-## `verify-validator-mutations.mjs` (stub — Phase 2)
+Sabotage-tested during implementation: temporarily replacing `validate()`
+with a function that always returns `{ ok: true }` made this script fail
+loudly on 20 of 21 fixtures (the honest one still "passed", correctly) —
+confirming it is not a vacuous check.
 
-Will disable each validator rule in turn and assert the fixture corpus
-detects it (a rule no fixture depends on is dead code and fails the build).
-Same stub status as above.
+## `verify-validator-mutations.mjs` (live)
+
+For each of the seven passes (`PASS_NAMES` in `packages/claims/src/types.ts`),
+disables it and re-runs every fixture tagged with that pass, requiring at
+least one to flip from rejected to accepted. A pass no fixture can flip is
+either dead code or fully shadowed by another pass, and fails the build
+either way. Also asserts the honest fixture still passes with every pass
+enabled, catching an over-broad rule. Same sabotage test as above: a
+neutered `validate()` fails all seven pass-checks here too.
+
+Designing fixtures to isolate a single pass turned out to be the hard part —
+see D17/D18 in `docs/DECISIONS.md` for the two real design changes this
+forced (citation-completeness's rule, and how the JD allowlist is scoped).
 
 ## `verify-claims-integrity.mjs` (live — proves the following against real Postgres)
 

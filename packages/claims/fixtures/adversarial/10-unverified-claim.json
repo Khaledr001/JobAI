@@ -1,0 +1,25 @@
+{
+  "name": "unverified-claim",
+  "description": "Cites a real claim that exists but is not yet confirmed/emittable.",
+  "pass": "citationResolution",
+  "expectedCode": "UNVERIFIED_CLAIM",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-00000000000a",
+      "kind": "used_technology",
+      "subject": "NestJS",
+      "statement": "Optimised NestJS request handling for lower latency.",
+      "quantities": {},
+      "verification": "attested",
+      "emittable": false
+    }
+  ],
+  "spans": [
+    {
+      "text": "Optimised NestJS request handling for lower latency.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-00000000000a"]
+    }
+  ]
+}

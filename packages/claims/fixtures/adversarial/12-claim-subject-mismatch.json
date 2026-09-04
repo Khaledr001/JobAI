@@ -1,0 +1,27 @@
+{
+  "name": "claim-subject-mismatch",
+  "description": "Cites a real, emittable claim scoped to a different resume entry than the span it is rendered under.",
+  "pass": "citationResolution",
+  "expectedCode": "CLAIM_SUBJECT_MISMATCH",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-00000000000c",
+      "kind": "used_technology",
+      "subject": "NestJS",
+      "statement": "Implemented NestJS services at Project A.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true,
+      "scopeRef": "project-a"
+    }
+  ],
+  "spans": [
+    {
+      "text": "Implemented NestJS services.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-00000000000c"],
+      "scopeRef": "project-b"
+    }
+  ]
+}

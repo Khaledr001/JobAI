@@ -1,0 +1,25 @@
+{
+  "name": "quantity-inflated-tenure",
+  "description": "Claim supports 2 years with NestJS; bullet inflates it to 4 years.",
+  "pass": "quantityContainment",
+  "expectedCode": "QUANTITY_INFLATED",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "kind": "used_technology",
+      "subject": "NestJS",
+      "statement": "Used NestJS professionally for 2 years across two employers.",
+      "quantities": { "years": 2 },
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "4 years of professional experience with NestJS.",
+      "kind": "summary",
+      "claimIds": ["00000000-0000-4000-8000-000000000005"]
+    }
+  ]
+}

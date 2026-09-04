@@ -1,0 +1,39 @@
+{
+  "name": "timeline-conflict",
+  "description": "Two distinct held_role claims with overlapping full-time date ranges, cited across two separate spans.",
+  "pass": "timelineCoherence",
+  "expectedCode": "TIMELINE_CONFLICT",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000011",
+      "kind": "held_role",
+      "subject": "Acme Corp",
+      "statement": "Backend engineer at Acme Corp.",
+      "quantities": { "from": "2024-01-01", "to": "2024-12-31" },
+      "verification": "documented",
+      "emittable": true
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000012",
+      "kind": "held_role",
+      "subject": "Globex Inc",
+      "statement": "Backend engineer at Globex Inc.",
+      "quantities": { "from": "2024-06-01", "to": "2025-01-01" },
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Delivered backend features for the platform.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000011"]
+    },
+    {
+      "text": "Delivered backend features for the platform.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000012"]
+    }
+  ]
+}

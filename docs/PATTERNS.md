@@ -72,6 +72,17 @@ pure — their specs need no database, no network, and run in the default
   preserves `#`, `+`, `.` (`C#`, `C++`, `.NET`, `Node.js`). A generic
   search-key normalizer that strips punctuation will silently merge `C#`
   into `C`.
+- **Never write an invisible Unicode character directly into source
+  code** (e.g. a zero-width space in a regex character class). It cannot be
+  reviewed in a diff or an editor, and in this codebase it was also
+  impossible to type reliably by hand — every attempt at
+  `packages/claims/src/normalize.ts` silently produced the real invisible
+  byte instead of the intended escape-sequence text. The fix: build the
+  pattern at runtime from numeric code points
+  (`String.fromCharCode(0x200b)`, ...), never from a literal character in
+  the file. A visible-but-confusable character (a Cyrillic "е" used as a
+  homoglyph test fixture) is fine to write literally — the concern is
+  specifically invisibility, not non-ASCII text.
 - HNSW filtered vector search returns `ef_search` candidates *then* applies
   the `WHERE` — a selective filter can silently return fewer rows than
   asked. See `docs/DATABASE.md` before writing a filtered embedding query.

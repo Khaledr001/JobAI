@@ -27,8 +27,8 @@
     "ingest": "pnpm --filter @jobhunter/ingest start",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check:privacy": "node scripts/check-privacy.mjs",
-    "verify:no-fabrication": "node scripts/verify-no-fabrication.mjs",
-    "verify:validator": "node scripts/verify-validator-mutations.mjs",
+    "verify:no-fabrication": "tsx scripts/verify-no-fabrication.mjs",
+    "verify:validator": "tsx scripts/verify-validator-mutations.mjs",
     "verify:claims-integrity": "node scripts/verify-claims-integrity.mjs",
     "verify": "pnpm check:boundaries && pnpm check:privacy && pnpm typecheck && pnpm lint && pnpm test && pnpm verify:no-fabrication && pnpm verify:validator && pnpm build"
   },
@@ -41,6 +41,7 @@
     "postgres": "^3.4.7",
     "prettier": "^3.6.2",
     "turbo": "^2.5.4",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.46.0"
   }

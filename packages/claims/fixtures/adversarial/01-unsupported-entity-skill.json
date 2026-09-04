@@ -1,0 +1,25 @@
+{
+  "name": "unsupported-entity-skill",
+  "description": "Bullet claims Kubernetes experience with no backing claim at all.",
+  "pass": "entityClosure",
+  "expectedCode": "UNSUPPORTED_ENTITY",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "kind": "used_technology",
+      "subject": "NestJS",
+      "statement": "Built the Phase 1 API in NestJS.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Extensive Kubernetes orchestration experience alongside NestJS API development.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000001"]
+    }
+  ]
+}

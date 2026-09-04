@@ -1,0 +1,25 @@
+{
+  "name": "unsupported-entity-degree",
+  "description": "Bullet invents an MBA from Harvard Business School; not backed by any claim.",
+  "pass": "entityClosure",
+  "expectedCode": "UNSUPPORTED_ENTITY",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "kind": "delivered_project",
+      "subject": "Payments integration",
+      "statement": "Delivered the payments integration project.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Holds an MBA from Harvard Business School alongside the payments integration work.",
+      "kind": "summary",
+      "claimIds": ["00000000-0000-4000-8000-000000000003"]
+    }
+  ]
+}

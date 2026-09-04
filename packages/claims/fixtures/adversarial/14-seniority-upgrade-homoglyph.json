@@ -1,0 +1,25 @@
+{
+  "name": "seniority-upgrade-homoglyph",
+  "description": "Same upgrade as the plain-text case, but 'led' is spelled with a Cyrillic е to try to evade the lexicon match.",
+  "pass": "seniorityLexicon",
+  "expectedCode": "SENIORITY_UPGRADE",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-00000000000e",
+      "kind": "delivered_project",
+      "subject": "Backend migration project",
+      "statement": "Contributed to the backend migration project.",
+      "quantities": { "seniority": "contributor" },
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Lеd the backend migration project.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-00000000000e"]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "version-unsupported",
+  "description": "Claim supports React 17; bullet claims React 19.",
+  "pass": "quantityContainment",
+  "expectedCode": "VERSION_UNSUPPORTED",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000013",
+      "kind": "used_technology",
+      "subject": "React frontend",
+      "statement": "Built the dashboard in React.",
+      "quantities": { "version:React": "17" },
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Built the dashboard in React 19.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000013"]
+    }
+  ]
+}

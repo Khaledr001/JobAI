@@ -1,0 +1,25 @@
+{
+  "name": "superlative-unsupported-zerowidth",
+  "description": "Claims to be an 'expert', with a zero-width space hidden inside the word to try to evade the lexicon match.",
+  "pass": "seniorityLexicon",
+  "expectedCode": "SUPERLATIVE_UNSUPPORTED",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-00000000000f",
+      "kind": "used_technology",
+      "subject": "Distributed systems",
+      "statement": "Worked on distributed systems as part of the platform team.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Recognised exp​ert in distributed systems.",
+      "kind": "summary",
+      "claimIds": ["00000000-0000-4000-8000-00000000000f"]
+    }
+  ]
+}

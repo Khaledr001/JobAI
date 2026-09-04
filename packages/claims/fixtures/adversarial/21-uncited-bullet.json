@@ -1,0 +1,15 @@
+{
+  "name": "uncited-bullet",
+  "description": "A bullet asserting experience with no citation at all -- plain enough that no other pass has anything to independently object to, isolating this case to citation completeness alone.",
+  "pass": "citationCompleteness",
+  "expectedCode": "UNCITED_SPAN",
+  "jobDescription": null,
+  "claims": [],
+  "spans": [
+    {
+      "text": "Worked closely with the rest of the team to ship the feature on schedule.",
+      "kind": "bullet",
+      "claimIds": []
+    }
+  ]
+}

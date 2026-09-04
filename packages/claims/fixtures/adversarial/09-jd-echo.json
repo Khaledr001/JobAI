@@ -1,0 +1,25 @@
+{
+  "name": "jd-echo",
+  "description": "Bullet mirrors a long verbatim run from the job description instead of describing real, cited experience.",
+  "pass": "entityClosure",
+  "expectedCode": "JD_ECHO",
+  "jobDescription": "We are hiring a backend engineer. Hands-on production experience operating Kubernetes clusters at scale is required for this role. Competitive salary.",
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000009",
+      "kind": "used_technology",
+      "subject": "Docker",
+      "statement": "Used Docker to containerise backend services.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Hands-on production experience operating Kubernetes clusters at scale.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000009"]
+    }
+  ]
+}

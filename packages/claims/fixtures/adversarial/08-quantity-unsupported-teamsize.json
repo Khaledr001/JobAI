@@ -1,0 +1,25 @@
+{
+  "name": "quantity-unsupported-teamsize",
+  "description": "Claim backs the seniority (led) but declares no team size at all; bullet invents a team of 8.",
+  "pass": "quantityContainment",
+  "expectedCode": "QUANTITY_UNSUPPORTED",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000008",
+      "kind": "delivered_project",
+      "subject": "Backend migration project",
+      "statement": "Led the backend migration project.",
+      "quantities": { "seniority": "led" },
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Led a team of 8 engineers on the backend migration project.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000008"]
+    }
+  ]
+}

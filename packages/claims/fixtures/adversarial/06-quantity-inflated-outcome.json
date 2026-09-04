@@ -1,0 +1,25 @@
+{
+  "name": "quantity-inflated-outcome",
+  "description": "Claim supports a 30% latency improvement; bullet inflates it to 300%.",
+  "pass": "quantityContainment",
+  "expectedCode": "QUANTITY_INFLATED",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000006",
+      "kind": "metric",
+      "subject": "Order Service latency",
+      "statement": "Reduced Order Service query latency under production load.",
+      "quantities": { "percent": 30 },
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Reduced Order Service latency by 300% through query optimisation.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000006"]
+    }
+  ]
+}

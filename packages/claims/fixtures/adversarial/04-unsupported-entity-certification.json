@@ -1,0 +1,25 @@
+{
+  "name": "unsupported-entity-certification",
+  "description": "Bullet invents an AWS Certified Solutions Architect certification not backed by any claim.",
+  "pass": "entityClosure",
+  "expectedCode": "UNSUPPORTED_ENTITY",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000004",
+      "kind": "delivered_project",
+      "subject": "Order Service",
+      "statement": "Delivered the Order Service scaling project.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "AWS Certified Solutions Architect certification holder who delivered the Order Service scaling project.",
+      "kind": "summary",
+      "claimIds": ["00000000-0000-4000-8000-000000000004"]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "unsupported-entity-employer",
+  "description": "Bullet claims he worked at Meta; no claim mentions Meta at all.",
+  "pass": "entityClosure",
+  "expectedCode": "UNSUPPORTED_ENTITY",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "kind": "delivered_project",
+      "subject": "Order Service",
+      "statement": "Delivered the Order Service scaling project.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Worked at Meta on scaling infrastructure for the Order Service.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000002"]
+    }
+  ]
+}

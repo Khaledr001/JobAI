@@ -7,7 +7,7 @@ This file tracks status only.
 |---|---|---|
 | 0 | Scaffold | ✅ done (`pnpm verify` green; see note) |
 | 1 | Claim ledger + My Work ⭐ | ✅ done (see note) |
-| 2 | Anti-fabrication validator | ⬜ todo |
+| 2 | Anti-fabrication validator | ✅ done (see note) |
 | 3 | Seed + ingest + conflicts | ⬜ todo |
 | 4 | LLM layer + first AI feature (gap analysis) | ⬜ todo |
 | 5 | Job ingestion (Greenhouse/Lever → Adzuna → free feeds) | ⬜ todo |
@@ -45,6 +45,29 @@ confirm succeeds → appears in `v_emittable_claims` → reject). That process
 of actually running it surfaced and fixed two real bugs no unit test caught
 (D15's `SET LOCAL` vs `set_config`, and a DTO silently dropping
 `sourceKind`/`sourceRef`) — see `docs/DECISIONS.md`.
+
+**Note on Phase 2**: `packages/claims/src/validator.ts` implements all seven
+passes for real (citation completeness, citation resolution, quantity
+containment, entity closure + JD-echo, seniority/superlative lexicon,
+employment implication, timeline coherence), against a 21-fixture
+adversarial corpus (one more than PLAN.md's "~20" — an extra fixture was
+needed to isolate citation-completeness in the mutation harness; see D18).
+`scripts/verify-no-fabrication.mjs` and `scripts/verify-validator-mutations.mjs`
+are both real now, not stubs, and `pnpm verify` is green end-to-end
+including them. Both were sabotage-tested by temporarily neutering
+`validate()` to always return `{ ok: true }`: `verify-no-fabrication`
+correctly failed 20 of 21 checks, and `verify-validator-mutations` failed
+all 7 pass-checks — proving neither is a vacuous gate. Two real design
+issues surfaced only by writing the fixtures, not by reading the code — see
+D17 and D18 in `docs/DECISIONS.md`.
+
+Known gap, deliberately not blocking phase progression: Phase 1's
+"Add-Work UI" deliverable (a page in `apps/web` to add a work entry and see
+recent work / technology scores) was not built — Phase 1 was verified
+against the API directly (`curl`/HTTP), not through a browser. The backend
+endpoints it would call already exist (`work`, `profile`, `taxonomy`
+modules). Worth picking up before or alongside Phase 7 (Dashboard), which
+needs the same API surface.
 
 ## Cross-cutting, not phase-bound
 

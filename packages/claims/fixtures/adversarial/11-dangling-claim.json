@@ -1,0 +1,25 @@
+{
+  "name": "dangling-claim",
+  "description": "Cites a claim id that does not exist anywhere in the claim list.",
+  "pass": "citationResolution",
+  "expectedCode": "DANGLING_CLAIM",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-00000000000b",
+      "kind": "used_technology",
+      "subject": "NestJS",
+      "statement": "Implemented NestJS microservices for the platform.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Implemented NestJS microservices for the platform.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-00000000000b", "ffffffff-ffff-4fff-8fff-ffffffffffff"]
+    }
+  ]
+}

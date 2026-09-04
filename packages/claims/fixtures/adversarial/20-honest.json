@@ -1,0 +1,25 @@
+{
+  "name": "honest",
+  "description": "A fully honest bullet: no invented numbers, no unsupported entities, every assertion backed by a cited, emittable claim.",
+  "pass": null,
+  "expectedCode": null,
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000015",
+      "kind": "delivered_project",
+      "subject": "Phase 1 claim ledger",
+      "statement": "Designed and implemented the Phase 1 claim ledger schema: grants, row-level security (RLS), and the promote_claim gating function.",
+      "quantities": {},
+      "verification": "documented",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Implemented the Phase 1 claim ledger schema, including grants, row-level security (RLS), and the promote_claim gating function.",
+      "kind": "bullet",
+      "claimIds": ["00000000-0000-4000-8000-000000000015"]
+    }
+  ]
+}

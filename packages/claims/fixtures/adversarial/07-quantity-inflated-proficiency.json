@@ -1,0 +1,25 @@
+{
+  "name": "quantity-inflated-proficiency",
+  "description": "Claim supports conversational French; summary inflates it to native.",
+  "pass": "quantityContainment",
+  "expectedCode": "QUANTITY_INFLATED",
+  "jobDescription": null,
+  "claims": [
+    {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "kind": "responsibility",
+      "subject": "French language proficiency",
+      "statement": "Conversational French, used for informal team communication.",
+      "quantities": { "proficiency:French": "conversational" },
+      "verification": "attested",
+      "emittable": true
+    }
+  ],
+  "spans": [
+    {
+      "text": "Native French speaker.",
+      "kind": "summary",
+      "claimIds": ["00000000-0000-4000-8000-000000000007"]
+    }
+  ]
+}
