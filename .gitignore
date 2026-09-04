@@ -49,3 +49,6 @@ playwright/.auth/
 # LLM cassettes recorded against the real profile rather than a synthetic one
 packages/llm/cassettes/**/*.real.json
 .privacy-patterns.local
+
+
+graphify-out
