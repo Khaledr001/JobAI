@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./values": {
+      "types": "./dist/enum-values.d.ts",
+      "default": "./dist/enum-values.js"
     }
   },
   "scripts": {

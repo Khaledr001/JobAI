@@ -1,1 +1,357 @@
 @import "tailwindcss";
+
+/**
+ * Semantic design tokens. Everything in the app references these, never a
+ * raw palette value -- so a theme is one block of overrides rather than a
+ * `dark:` variant on every element, and a palette change is one edit.
+ *
+ * Three states, matching the theme switcher in the sidebar:
+ *
+ *   no `data-theme` attribute   -> follow the OS (the default)
+ *   data-theme="light"          -> force light, even on a dark OS
+ *   data-theme="dark"           -> force dark, even on a light OS
+ *
+ * The attribute is written to <html> by an inline script in `layout.tsx`
+ * before first paint, so an explicit choice never flashes the other theme.
+ */
+@layer base {
+  :root {
+    /* ---- Palette. The only place a colour literal appears. ---- */
+    --light-background: oklch(0.984 0.004 286);
+    --light-surface: oklch(1 0 0);
+    --light-surface-muted: oklch(0.967 0.006 286);
+    --light-surface-sunken: oklch(0.952 0.008 286);
+    --light-border: oklch(0.923 0.006 286);
+    --light-border-strong: oklch(0.865 0.01 286);
+    --light-foreground: oklch(0.22 0.015 286);
+    --light-muted-foreground: oklch(0.515 0.016 286);
+    --light-subtle-foreground: oklch(0.635 0.014 286);
+    --light-brand: oklch(0.545 0.212 283);
+    --light-brand-hover: oklch(0.485 0.212 283);
+    --light-brand-soft: oklch(0.955 0.03 286);
+    --light-brand-foreground: oklch(1 0 0);
+    --light-gradient-from: oklch(0.585 0.205 288);
+    --light-gradient-to: oklch(0.515 0.195 264);
+    --light-success: oklch(0.56 0.145 158);
+    --light-success-soft: oklch(0.955 0.042 158);
+    --light-warning: oklch(0.62 0.145 68);
+    --light-warning-soft: oklch(0.962 0.052 80);
+    --light-danger: oklch(0.555 0.195 20);
+    --light-danger-soft: oklch(0.955 0.032 20);
+    --light-info: oklch(0.55 0.135 240);
+    --light-info-soft: oklch(0.955 0.032 240);
+    --light-ring: oklch(0.545 0.212 283 / 0.35);
+    /* Shadows carry the "lifted card" look in light mode. */
+    --light-shadow-sm: 0 1px 2px 0 oklch(0.22 0.015 286 / 0.05);
+    --light-shadow-card:
+      0 1px 2px 0 oklch(0.22 0.015 286 / 0.04),
+      0 8px 24px -10px oklch(0.22 0.015 286 / 0.1);
+    --light-shadow-lift:
+      0 2px 4px 0 oklch(0.22 0.015 286 / 0.04),
+      0 18px 40px -14px oklch(0.22 0.015 286 / 0.18);
+    --light-shadow-brand: 0 8px 24px -8px oklch(0.545 0.212 283 / 0.45);
+
+    --dark-background: oklch(0.163 0.012 286);
+    --dark-surface: oklch(0.205 0.014 286);
+    --dark-surface-muted: oklch(0.245 0.015 286);
+    --dark-surface-sunken: oklch(0.185 0.013 286);
+    --dark-border: oklch(0.288 0.016 286);
+    --dark-border-strong: oklch(0.372 0.018 286);
+    --dark-foreground: oklch(0.965 0.004 286);
+    --dark-muted-foreground: oklch(0.722 0.014 286);
+    --dark-subtle-foreground: oklch(0.572 0.015 286);
+    --dark-brand: oklch(0.705 0.175 286);
+    --dark-brand-hover: oklch(0.765 0.16 286);
+    --dark-brand-soft: oklch(0.298 0.07 286);
+    --dark-brand-foreground: oklch(0.15 0.012 286);
+    --dark-gradient-from: oklch(0.68 0.19 288);
+    --dark-gradient-to: oklch(0.6 0.18 264);
+    --dark-success: oklch(0.725 0.145 158);
+    --dark-success-soft: oklch(0.288 0.052 158);
+    --dark-warning: oklch(0.785 0.135 75);
+    --dark-warning-soft: oklch(0.308 0.052 75);
+    --dark-danger: oklch(0.685 0.175 20);
+    --dark-danger-soft: oklch(0.298 0.062 20);
+    --dark-info: oklch(0.705 0.125 240);
+    --dark-info-soft: oklch(0.288 0.052 240);
+    --dark-ring: oklch(0.705 0.175 286 / 0.42);
+    /* On a dark canvas a drop shadow is nearly invisible -- depth comes from
+       a lighter rim instead, so these are inset hairlines, not glows. */
+    --dark-shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.3);
+    --dark-shadow-card:
+      0 1px 2px 0 oklch(0 0 0 / 0.4), 0 0 0 1px oklch(1 0 0 / 0.03) inset;
+    --dark-shadow-lift:
+      0 12px 32px -12px oklch(0 0 0 / 0.7), 0 0 0 1px oklch(1 0 0 / 0.06) inset;
+    --dark-shadow-brand: 0 8px 28px -10px oklch(0.705 0.175 286 / 0.55);
+
+    /* ---- Light is the base. A light OS and an explicit "light" both land here. ---- */
+    color-scheme: light;
+    --background: var(--light-background);
+    --surface: var(--light-surface);
+    --surface-muted: var(--light-surface-muted);
+    --surface-sunken: var(--light-surface-sunken);
+    --border: var(--light-border);
+    --border-strong: var(--light-border-strong);
+    --foreground: var(--light-foreground);
+    --muted-foreground: var(--light-muted-foreground);
+    --subtle-foreground: var(--light-subtle-foreground);
+    --brand: var(--light-brand);
+    --brand-hover: var(--light-brand-hover);
+    --brand-soft: var(--light-brand-soft);
+    --brand-foreground: var(--light-brand-foreground);
+    --gradient-from: var(--light-gradient-from);
+    --gradient-to: var(--light-gradient-to);
+    --success: var(--light-success);
+    --success-soft: var(--light-success-soft);
+    --warning: var(--light-warning);
+    --warning-soft: var(--light-warning-soft);
+    --danger: var(--light-danger);
+    --danger-soft: var(--light-danger-soft);
+    --info: var(--light-info);
+    --info-soft: var(--light-info-soft);
+    --ring: var(--light-ring);
+    --shadow-sm-token: var(--light-shadow-sm);
+    --shadow-card-token: var(--light-shadow-card);
+    --shadow-lift-token: var(--light-shadow-lift);
+    --shadow-brand-token: var(--light-shadow-brand);
+  }
+
+  /**
+   * The dark mapping appears twice on purpose: once for "follow the OS" and
+   * once for an explicit choice. A media query cannot be folded into a
+   * selector list, so there is no way to express both in one rule -- and the
+   * `light-dark()` function, which would, silently degrades inside the
+   * `color-mix()` Tailwind emits for opacity modifiers (`bg-surface/85`).
+   * Both blocks only remap the palette above, so a colour edit is still one
+   * edit; adding a *new* token means touching both.
+   */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --background: var(--dark-background);
+      --surface: var(--dark-surface);
+      --surface-muted: var(--dark-surface-muted);
+      --surface-sunken: var(--dark-surface-sunken);
+      --border: var(--dark-border);
+      --border-strong: var(--dark-border-strong);
+      --foreground: var(--dark-foreground);
+      --muted-foreground: var(--dark-muted-foreground);
+      --subtle-foreground: var(--dark-subtle-foreground);
+      --brand: var(--dark-brand);
+      --brand-hover: var(--dark-brand-hover);
+      --brand-soft: var(--dark-brand-soft);
+      --brand-foreground: var(--dark-brand-foreground);
+      --gradient-from: var(--dark-gradient-from);
+      --gradient-to: var(--dark-gradient-to);
+      --success: var(--dark-success);
+      --success-soft: var(--dark-success-soft);
+      --warning: var(--dark-warning);
+      --warning-soft: var(--dark-warning-soft);
+      --danger: var(--dark-danger);
+      --danger-soft: var(--dark-danger-soft);
+      --info: var(--dark-info);
+      --info-soft: var(--dark-info-soft);
+      --ring: var(--dark-ring);
+      --shadow-sm-token: var(--dark-shadow-sm);
+      --shadow-card-token: var(--dark-shadow-card);
+      --shadow-lift-token: var(--dark-shadow-lift);
+      --shadow-brand-token: var(--dark-shadow-brand);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --background: var(--dark-background);
+    --surface: var(--dark-surface);
+    --surface-muted: var(--dark-surface-muted);
+    --surface-sunken: var(--dark-surface-sunken);
+    --border: var(--dark-border);
+    --border-strong: var(--dark-border-strong);
+    --foreground: var(--dark-foreground);
+    --muted-foreground: var(--dark-muted-foreground);
+    --subtle-foreground: var(--dark-subtle-foreground);
+    --brand: var(--dark-brand);
+    --brand-hover: var(--dark-brand-hover);
+    --brand-soft: var(--dark-brand-soft);
+    --brand-foreground: var(--dark-brand-foreground);
+    --gradient-from: var(--dark-gradient-from);
+    --gradient-to: var(--dark-gradient-to);
+    --success: var(--dark-success);
+    --success-soft: var(--dark-success-soft);
+    --warning: var(--dark-warning);
+    --warning-soft: var(--dark-warning-soft);
+    --danger: var(--dark-danger);
+    --danger-soft: var(--dark-danger-soft);
+    --info: var(--dark-info);
+    --info-soft: var(--dark-info-soft);
+    --ring: var(--dark-ring);
+    --shadow-sm-token: var(--dark-shadow-sm);
+    --shadow-card-token: var(--dark-shadow-card);
+    --shadow-lift-token: var(--dark-shadow-lift);
+    --shadow-brand-token: var(--dark-shadow-brand);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-gradient-from: var(--gradient-from);
+  --color-gradient-to: var(--gradient-to);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --color-ring: var(--ring);
+
+  /* `shadow-card` / `shadow-lift` / `shadow-brand` utilities. */
+  --shadow-sm: var(--shadow-sm-token);
+  --shadow-card: var(--shadow-card-token);
+  --shadow-lift: var(--shadow-lift-token);
+  --shadow-brand: var(--shadow-brand-token);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Larger than the 0.75rem admin-panel default -- the single biggest lever
+     on whether a card reads as "product" or "table row". */
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--brand-soft);
+    color: var(--foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  /* Thin, unobtrusive scrollbars -- this is a dense, data-heavy tool. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+}
+
+@layer components {
+  /**
+   * Company initial chips (`components/ui/avatar.tsx`). The component sets
+   * only `--avatar-hue`; lightness/chroma flip with the theme here, because
+   * the pale chip that reads well on white glares on the dark canvas. Same
+   * two-block dark pattern as the tokens above, for the same reason.
+   */
+  .company-avatar {
+    background-color: oklch(0.94 0.055 var(--avatar-hue));
+    color: oklch(0.42 0.14 var(--avatar-hue));
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .company-avatar {
+      background-color: oklch(0.32 0.06 var(--avatar-hue));
+      color: oklch(0.84 0.11 var(--avatar-hue));
+    }
+  }
+
+  :root[data-theme="dark"] .company-avatar {
+    background-color: oklch(0.32 0.06 var(--avatar-hue));
+    color: oklch(0.84 0.11 var(--avatar-hue));
+  }
+}
+
+@layer utilities {
+  /** The brand gradient, used on the sidebar mark, primary buttons and hero panels. */
+  .bg-brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--gradient-from) 0%,
+      var(--gradient-to) 100%
+    );
+  }
+
+  /** Same gradient as text, for a single accented headline word. */
+  .text-brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--gradient-from) 0%,
+      var(--gradient-to) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /**
+   * The soft wash behind the dashboard header. Two wide, low-opacity radial
+   * stops rather than a linear gradient -- a linear ramp across a full-width
+   * container bands visibly on a cheap panel.
+   */
+  .bg-brand-wash {
+    background-image:
+      radial-gradient(
+        60rem 22rem at 8% -12%,
+        color-mix(in oklab, var(--gradient-from) 22%, transparent) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        50rem 20rem at 92% -20%,
+        color-mix(in oklab, var(--gradient-to) 18%, transparent) 0%,
+        transparent 62%
+      );
+  }
+
+  .animate-in {
+    animation: fade-in-up 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

@@ -19,6 +19,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "undici": "^8.10.2",
     "zod": "^4.3.5"
   },
   "devDependencies": {

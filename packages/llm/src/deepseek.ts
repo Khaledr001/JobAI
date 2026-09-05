@@ -1,3 +1,4 @@
+import { Agent, fetch as undiciFetch } from "undici";
 import { estimateCostUsd } from "./pricing.js";
 import type { LlmCompleteOptions, LlmCompleteResult, LlmProvider } from "./provider.js";
 
@@ -29,7 +30,22 @@ export interface DeepSeekProviderOptions {
   fetchImpl?: typeof fetch;
   /** Injectable for tests, so cost estimation isn't a race with the real clock. */
   now?: () => Date;
+  /**
+   * How long to wait for DeepSeek's response headers, in milliseconds.
+   *
+   * This exists because Node's global `fetch` enforces undici's default
+   * 300s `headersTimeout` and there is no way to raise it per-request
+   * without supplying a dispatcher. A `deepseek-v4-pro` resume generation
+   * over the full claim ledger really does exceed five minutes -- the first
+   * live attempt died at 298s with a bare `TypeError: fetch failed`, which
+   * is what that abort looks like from the outside. `AbortSignal.timeout()`
+   * cannot help: it can only make the deadline shorter.
+   */
+  timeoutMs?: number;
 }
+
+/** Generous but finite: a reasoning model is slow, a hung socket is forever. */
+const DEFAULT_TIMEOUT_MS = 900_000;
 
 /**
  * The real DeepSeek client. Never called directly by application code --
@@ -45,8 +61,27 @@ export class DeepSeekProvider implements LlmProvider {
 
   constructor(options: DeepSeekProviderOptions = {}) {
     this.apiKey = options.apiKey;
-    this.fetchImpl = options.fetchImpl ?? fetch;
     this.now = options.now ?? (() => new Date());
+
+    if (options.fetchImpl) {
+      // A test double. Never wrapped -- it must see exactly what it expects.
+      this.fetchImpl = options.fetchImpl;
+    } else {
+      // undici's OWN fetch, not Node's global one, so the Agent and the
+      // client come from the same undici instance. Node bundles its own
+      // copy; handing a dispatcher from the npm package to the bundled
+      // client is version-skew waiting to happen.
+      const timeout = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+      const dispatcher = new Agent({
+        headersTimeout: timeout,
+        bodyTimeout: timeout,
+      });
+      this.fetchImpl = ((input: string | URL | Request, init?: RequestInit) =>
+        undiciFetch(input as string, {
+          ...(init as Record<string, unknown>),
+          dispatcher,
+        })) as unknown as typeof fetch;
+    }
   }
 
   async complete(options: LlmCompleteOptions): Promise<LlmCompleteResult> {

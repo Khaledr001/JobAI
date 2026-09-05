@@ -1,5 +1,11 @@
 "use client";
 
+import type {
+  EvidenceKind,
+  TechTagRole,
+  WorkEntryType,
+} from "@jobhunter/shared-types/values";
+
 /**
  * The one place apps/web talks to apps/api -- no server actions (matches
  * the reference repo's convention: every data-access path stays visible
@@ -32,6 +38,9 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    /** apps/api's AllExceptionsFilter passes AppError.details through -- e.g. the anti-fabrication violations behind a DOCUMENT_VALIDATION_FAILED. */
+    public readonly code?: string,
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "ApiError";
@@ -51,11 +60,13 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   if (!res.ok) {
     const errorBody = (await res.json().catch(() => null)) as {
-      error?: { message?: string };
+      error?: { message?: string; code?: string; details?: Record<string, unknown> };
     } | null;
     throw new ApiError(
       res.status,
       errorBody?.error?.message ?? `${method} ${path} failed: ${res.status}`,
+      errorBody?.error?.code,
+      errorBody?.error?.details,
     );
   }
   if (res.status === 204) return undefined as T;
@@ -68,6 +79,7 @@ export const apiPost = <T>(path: string, body?: unknown) =>
   request<T>("POST", path, body);
 export const apiPatch = <T>(path: string, body?: unknown) =>
   request<T>("PATCH", path, body);
+export const apiDelete = <T>(path: string) => request<T>("DELETE", path);
 
 // ---------------------------------------------------------------------------
 // Auth
@@ -176,6 +188,72 @@ export const getWorkEntries = () => apiGet<WorkEntry[]>("/work-entries");
 export const getTechnologyScores = () =>
   apiGet<TechnologyScore[]>("/work-entries/technology-scores");
 
+/**
+ * Mirrors apps/api's `CreateWorkEntrySchema` (work/dto.ts). Optional fields
+ * are genuinely optional rather than `| undefined` -- `exactOptionalPropertyTypes`
+ * is on, and "field absent" and "field present but undefined" are different
+ * requests. Callers build these with conditional spreads.
+ */
+export interface CreateWorkEntryInput {
+  title: string;
+  body: string;
+  outcome?: string;
+  type: WorkEntryType;
+  /** `YYYY-MM-DD`; the API coerces it with `z.coerce.date()`. */
+  occurredOn: string;
+  occurredThrough?: string;
+  projectId?: string;
+  epochId?: string;
+  /** Set with `sourceRef` or not at all -- see the note on WorkEntry evidence below. */
+  sourceKind?: EvidenceKind;
+  sourceRef?: string;
+  technologies: Array<{ technologyId: string; role: TechTagRole }>;
+}
+
+export const createWorkEntry = (input: CreateWorkEntryInput) =>
+  apiPost<WorkEntry>("/work-entries", input);
+
+/** Soft-retracts (sets `retractedAt`) -- the ledger never actually deletes. */
+export const retractWorkEntry = (id: string) =>
+  apiDelete<WorkEntry>(`/work-entries/${id}`);
+
+// ---------------------------------------------------------------------------
+// Taxonomy + projects (reference data the Add Work form needs)
+// ---------------------------------------------------------------------------
+
+export interface TaxonomyNode {
+  id: string;
+  kind: string;
+  canonicalName: string;
+  slug: string;
+  /** `proposed` nodes match but are excluded from resume emission. */
+  reviewStatus: string;
+  aliases: Array<{ id: string; alias: string; normalized: string }>;
+}
+
+export interface ProjectEpoch {
+  id: string;
+  projectId: string;
+  label: string;
+  stackSummary: string | null;
+  startedOn: string;
+  endedOn: string | null;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: string;
+  isCurrent: boolean;
+  epochs: ProjectEpoch[];
+}
+
+export const getTaxonomyNodes = () =>
+  apiGet<TaxonomyNode[]>("/taxonomy/nodes?kind=technology");
+export const getProjects = () => apiGet<Project[]>("/profile/projects");
+
 // ---------------------------------------------------------------------------
 // Conflicts
 // ---------------------------------------------------------------------------
@@ -204,3 +282,90 @@ export interface ResolveConflictInput {
 export const getConflicts = () => apiGet<Conflict[]>("/conflicts");
 export const resolveConflict = (id: string, resolution: ResolveConflictInput) =>
   apiPost<Conflict>(`/conflicts/${id}/resolve`, resolution);
+
+// ---------------------------------------------------------------------------
+// Documents
+// ---------------------------------------------------------------------------
+
+export interface GeneratedDocument {
+  document: {
+    id: string;
+    jobId: string | null;
+    kind: string;
+    filePathPdf: string;
+    filePathDocx: string;
+    model: string;
+    promptVersion: string;
+    generatedAt: string;
+  };
+  spans: Array<{
+    id: string;
+    kind: "summary" | "bullet";
+    text: string;
+    claimIds: string[];
+    order: number;
+  }>;
+}
+
+export const generateDocument = (
+  jobId: string,
+  kind: "resume" | "cover_letter" = "resume",
+) => apiPost<GeneratedDocument>("/documents/generate", { jobId, kind });
+
+// ---------------------------------------------------------------------------
+// Applications
+// ---------------------------------------------------------------------------
+
+export type ApplicationStatus =
+  | "discovered"
+  | "matched"
+  | "drafted"
+  | "approved"
+  | "applied"
+  | "replied"
+  | "interviewing"
+  | "offer"
+  | "rejected"
+  | "ghosted";
+
+export interface Application {
+  id: string;
+  jobId: string;
+  documentId: string | null;
+  status: ApplicationStatus;
+  snapshotChecksumPdf: string | null;
+  snapshotClaimIds: string[] | null;
+  snapshotModel: string | null;
+  snapshotPromptVersion: string | null;
+  snapshotCassetteKey: string | null;
+  approvedAt: string | null;
+  appliedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApplicationTransition {
+  id: string;
+  fromStatus: ApplicationStatus | null;
+  toStatus: ApplicationStatus;
+  note: string | null;
+  occurredAt: string;
+}
+
+export interface ApplicationDetail extends Application {
+  transitions: ApplicationTransition[];
+}
+
+export interface TransitionInput {
+  status: ApplicationStatus;
+  documentId?: string;
+  note?: string;
+}
+
+export const getApplications = () => apiGet<Application[]>("/applications");
+export const getApplication = (id: string) =>
+  apiGet<ApplicationDetail>(`/applications/${id}`);
+export const createApplication = (jobId: string) =>
+  apiPost<Application>("/applications", { jobId });
+export const transitionApplication = (id: string, input: TransitionInput) =>
+  apiPost<Application>(`/applications/${id}/transition`, input);

@@ -382,13 +382,72 @@ follow-up); no automatic `discovered` creation when a job is ingested (an
 operator explicitly starts tracking a job today, matching this system's
 single-operator, manual-review scale).
 
-Known gap, deliberately not blocking phase progression: Phase 1's
-"Add-Work UI" deliverable (a page in `apps/web` to add a work entry and see
-recent work / technology scores) was not built — Phase 1 was verified
-against the API directly (`curl`/HTTP), not through a browser. The backend
-endpoints it would call already exist (`work`, `profile`, `taxonomy`
-modules). Worth picking up before or alongside Phase 7 (Dashboard), which
-needs the same API surface.
+**Closed (2026-09-05)**: Phase 1's "Add-Work UI" deliverable — long carried
+here as a known gap — is built. `/work` now has a real Add Work form
+(`apps/web/src/components/work/add-work-form.tsx`) covering every field of
+`CreateWorkEntrySchema`, plus per-row retraction behind a two-step confirm.
+Proven end-to-end against the live API and real Postgres, not just
+type-checked: creating an entry tagged `NATS` with source evidence moved that
+technology's real composite score 0.4327 → 0.7075 (projectCount 0 → 1,
+monthsActive 0 → 14); re-posting the same body with different whitespace and
+a different title returned `CONFLICT` carrying `details.workEntryId` (the
+form renders that case specifically); retracting reverted the score to
+0.4327 exactly. The test row was hard-deleted afterwards — the ledger is back
+to its real 243 entries with zero retracted rows.
+
+Two things the form makes visible that the API cannot: the `sourceKind` /
+`sourceRef` pair is enforced as both-or-neither client-side, and a live
+"caps at attested/documented" badge shows the verification ceiling the
+current field values imply — the difference between an entry that can reach
+a resume and one that never will. Both behaviours are read off
+`packages/shared-utils`' own projection spec, not guessed.
+
+Still not built, and still real follow-up work: editing `profile`,
+`experiences`, and `projects` from the browser (those endpoints exist and
+are exercised only by `curl` today), and any UI for the `claims` write path
+(`POST /claims`, `/evidence`, `/confirm`, `/reject`).
+
+**Known data pollution, not yet cleaned (found 2026-09-05)**:
+`scripts/verify-claims-integrity.mjs` and `scripts/verify-sources-integrity.mjs`
+each `INSERT` a fixture row into the real `job_canonical` table and **never
+delete it**. `verify-sources-integrity.mjs` even makes its company name unique
+per run (`Verify Sources Integrity Co ${runId}`) specifically so a second run
+won't collide with the first — which guarantees the table grows by one junk
+company on every invocation. Today that's 4 of the 50 rows in `/jobs`
+("Verify Co" ×2, "Verify Sources Integrity Co …" ×2) against 46 real Mixpanel
+postings, and they now surface on the dashboard's "Latest postings". The fix
+is for each script to delete its own fixture in a `finally`; the existing rows
+need a one-off cleanup. Not done unilaterally — deleting rows from the real
+jobs table is the operator's call.
+
+## Open bugs found during the first live-LLM run (2026-09-05)
+
+**1. The matcher scores 100/"strong" when it extracts zero requirements.**
+`packages/matching/src/score.ts:65-66` reads `totalWeight === 0 ? 1 : …`, so a
+job description that yields no extracted requirements gets `stackFit`,
+`recencyFit`, `seniorityFit` and `domainOverlap` all defaulting to `1.0` —
+headline **100**, band **strong**, `matched: [] missing: []`. Measured against
+real data: **43 of 46** real Mixpanel postings score a vacuous 100, including
+sales, HR and finance roles. The clearest case is "Software Engineer, AI
+Platform", which scores 100 while the LLM gap analysis on the *same posting*
+found 0 matched and 8 missing required skills (LLMs, agent orchestration,
+vector search, eval frameworks — none of which exist in the 31-node taxonomy,
+so the keyword extractor of D38 finds nothing). For a system whose Rule #1 is
+that absence of evidence must never become a positive claim, "no requirements
+found" defaulting to a perfect score is that rule inverted. Needs: an explicit
+`insufficient_data` band (or a gate) distinct from `strong`, so the dashboard
+cannot present an unscoreable job as a great match.
+
+**2. Dead LLM env vars.** `LLM_TIMEOUT_MS` and `LLM_MAX_TOKENS` are set in
+`.env` and read nowhere in the codebase (see D57). Either wire them into
+`DeepSeekProvider` (the `timeoutMs` option now exists for exactly this) or
+delete them — as-is they make the system look configured when it isn't.
+
+**3. `deepseek-v4-*` are reasoning models and bill reasoning as output.** A
+single flash call spent 8,232 completion tokens of which 7,978 were
+`reasoning_tokens`. The cost model in PLAN.md (~4k in / 1.2k out per JD parse)
+does not account for this; real per-call cost is meaningfully higher than
+budgeted.
 
 ## Cross-cutting, not phase-bound
 

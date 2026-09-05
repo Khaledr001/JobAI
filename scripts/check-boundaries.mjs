@@ -20,7 +20,9 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..");
-const IMPORT_RE = /(?:from\s+|import\s*\(\s*)["']([^"']+)["']/g;
+// `import\s+["']` catches the side-effect form (`import "@jobhunter/db";`),
+// which has no `from` and would otherwise slip past every rule below.
+const IMPORT_RE = /(?:from\s+|import\s*\(\s*|import\s+)["']([^"']+)["']/g;
 
 function listSourceFiles(dir) {
   const out = [];
@@ -46,6 +48,18 @@ function listSourceFiles(dir) {
 function findImports(file) {
   const content = readFileSync(file, "utf8");
   return [...content.matchAll(IMPORT_RE)].map((m) => m[1]);
+}
+
+/**
+ * The package a bare specifier belongs to, ignoring any subpath export:
+ * "@jobhunter/shared-types/values" -> "@jobhunter/shared-types",
+ * "playwright/test" -> "playwright". Relative specifiers pass through
+ * untouched -- rule 2 handles those and wants the literal string.
+ */
+function packageNameOf(spec) {
+  if (spec.startsWith(".")) return spec;
+  const parts = spec.split("/");
+  return spec.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
 }
 
 function packageJsonFor(pkgDir) {
@@ -98,8 +112,14 @@ for (const unit of allPackages) {
 
   for (const file of files) {
     for (const spec of findImports(file)) {
+      // Every package-level rule below compares against the *package*, not
+      // the specifier: "@jobhunter/shared-types/values" is a subpath export
+      // of a declared dependency, not an undeclared package of its own.
+      // Messages still quote `spec`, so they point at what was written.
+      const specPkg = packageNameOf(spec);
+
       // Rule 1: no app imports another app.
-      if (unit.kind === "apps" && appPackageNames.has(spec) && spec !== pkg.name) {
+      if (unit.kind === "apps" && appPackageNames.has(specPkg) && specPkg !== pkg.name) {
         violations.push(
           `${relative(ROOT, file)}: app "${unit.name}" imports another app (${spec})`,
         );
@@ -116,14 +136,14 @@ for (const unit of allPackages) {
       }
 
       // Rule 3: apps/web may not import @jobhunter/db or @jobhunter/llm.
-      if (unit.name === "web" && FORBIDDEN_FOR_PURE.includes(spec)) {
+      if (unit.name === "web" && FORBIDDEN_FOR_PURE.includes(specPkg)) {
         violations.push(
           `${relative(ROOT, file)}: apps/web must not import ${spec} (server-only)`,
         );
       }
 
       // Rule 4: only apps/assist may import "playwright".
-      if (spec === "playwright" && unit.name !== "assist") {
+      if (specPkg === "playwright" && unit.name !== "assist") {
         violations.push(
           `${relative(ROOT, file)}: only apps/assist may import "playwright"`,
         );
@@ -133,7 +153,7 @@ for (const unit of allPackages) {
       if (
         unit.kind === "packages" &&
         PURE_PACKAGES.includes(unit.name) &&
-        FORBIDDEN_FOR_PURE.includes(spec)
+        FORBIDDEN_FOR_PURE.includes(specPkg)
       ) {
         violations.push(
           `${relative(ROOT, file)}: ${unit.name} must stay pure -- cannot import ${spec}`,
@@ -142,9 +162,9 @@ for (const unit of allPackages) {
 
       // Rule 6: every @jobhunter/* import must be a declared dependency.
       if (
-        spec.startsWith("@jobhunter/") &&
-        !declaredDeps.has(spec) &&
-        spec !== pkg.name
+        specPkg.startsWith("@jobhunter/") &&
+        !declaredDeps.has(specPkg) &&
+        specPkg !== pkg.name
       ) {
         violations.push(
           `${relative(ROOT, file)}: imports ${spec} without declaring it in package.json`,
