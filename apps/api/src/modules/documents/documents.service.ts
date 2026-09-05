@@ -151,8 +151,23 @@ export class DocumentsService {
     spans: DocumentSpan[],
     cassetteKey: string,
   ) {
+    // The operator's real name, read from the row that owns the ledger --
+    // never asked of the model, which has no way to know it and would have
+    // to invent one. `users` is not owner-scoped, so this is a plain read.
+    const [user] = await this.db
+      .select({ displayName: schema.users.displayName })
+      .from(schema.users)
+      .where(eq(schema.users.id, ownerId))
+      .limit(1);
+    if (!user?.displayName) {
+      throw new AppError(
+        ERROR_CODES.NOT_FOUND,
+        `Cannot render a resume: user ${ownerId} has no displayName.`,
+      );
+    }
+
     const resumeDocument: ResumeDocument = {
-      candidateName: "Operator",
+      candidateName: user.displayName,
       sections: [
         {
           heading: `${job.title} at ${job.company}`,

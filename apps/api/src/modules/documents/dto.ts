@@ -21,10 +21,19 @@ const GeneratedSpanSchema = z.object({
  * `@jobhunter/resume-render`'s `ResumeDocument` (no section headings from
  * the model) -- the generator owns section grouping, not the LLM.
  */
+/**
+ * Spans only. The candidate's name and contact line are NOT asked of the
+ * model: they are known facts on the `users`/`profiles` rows, and `persist()`
+ * reads them from there. Requiring them here was a real bug -- `draft()`
+ * destructured `spans` and threw `candidateName` away, so the model was
+ * forced to produce a value nothing consumed. Worse, the prompt never tells
+ * it the operator's name, so the only ways to satisfy the field were to
+ * invent one or return "". A live `deepseek-v4-pro` call did the honest
+ * thing, returned "", and the whole generation failed on `min(1)`.
+ * Identity belongs to the database; the model's job is the prose.
+ */
 export const GeneratedDocumentSchema = z
   .object({
-    candidateName: z.string().min(1),
-    contactLine: z.string().optional(),
     spans: z.array(GeneratedSpanSchema).min(1),
   })
   .strict();

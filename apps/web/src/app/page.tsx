@@ -7,7 +7,7 @@ import { getAccessToken } from "@/lib/api-client";
 export default function HomePage() {
   const router = useRouter();
   useEffect(() => {
-    router.replace(getAccessToken() ? "/jobs" : "/login");
+    router.replace(getAccessToken() ? "/dashboard" : "/login");
   }, [router]);
   return null;
 }

@@ -11,6 +11,7 @@ import { LlmService } from "../llm/llm.service.js";
 import { DocumentsService } from "./documents.service.js";
 
 const OWNER_ID = "11111111-1111-1111-1111-111111111111";
+const USER_DISPLAY_NAME = "Test Operator";
 const JOB_ROW = {
   id: "job-1",
   title: "Backend Engineer",
@@ -44,6 +45,16 @@ function makeMockDb() {
   const findFirst = vi.fn().mockResolvedValue(JOB_ROW);
   const execute = vi.fn().mockResolvedValue([CLAIM_ROW]);
 
+  // persist() reads the operator's real name off `users` rather than asking
+  // the model for it -- see GeneratedDocumentSchema's note in dto.ts.
+  const select = vi.fn().mockReturnValue({
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue([{ displayName: USER_DISPLAY_NAME }]),
+      }),
+    }),
+  });
+
   const documentsReturning = vi.fn().mockImplementation(() =>
     Promise.resolve([
       {
@@ -75,6 +86,7 @@ function makeMockDb() {
   return {
     query: { jobCanonical: { findFirst } },
     transaction,
+    select,
     execute,
     insert,
     documentsValues,
@@ -115,7 +127,6 @@ describe("DocumentsService", () => {
   it("generates and persists a document when the first draft passes validation", async () => {
     complete.mockResolvedValue(
       fakeResult({
-        candidateName: "Operator",
         spans: [
           {
             kind: "bullet",
@@ -151,8 +162,7 @@ describe("DocumentsService", () => {
     complete
       .mockResolvedValueOnce(
         fakeResult({
-          candidateName: "Operator",
-          // Fabricated skill (Kubernetes) not present in any claim --
+            // Fabricated skill (Kubernetes) not present in any claim --
           // PLAN.md's literal acceptance-test scenario for Phase 8.
           spans: [
             { kind: "bullet", text: "Expert in Kubernetes.", claimIds: [CLAIM_ROW.id] },
@@ -161,8 +171,7 @@ describe("DocumentsService", () => {
       )
       .mockResolvedValueOnce(
         fakeResult({
-          candidateName: "Operator",
-          spans: [
+            spans: [
             {
               kind: "bullet",
               text: "Used NestJS in production.",
@@ -193,7 +202,6 @@ describe("DocumentsService", () => {
   it("throws DOCUMENT_VALIDATION_FAILED with the violations, and persists nothing, if the retry is also rejected", async () => {
     complete.mockResolvedValue(
       fakeResult({
-        candidateName: "Operator",
         spans: [
           { kind: "bullet", text: "Expert in Kubernetes.", claimIds: [CLAIM_ROW.id] },
         ],

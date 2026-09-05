@@ -10,8 +10,6 @@ dist/
 coverage/
 
 # Env
-.env
-.env.*
 !.env.example
 
 # Logs
@@ -19,7 +17,6 @@ coverage/
 npm-debug.log*
 
 # Editor / OS
-.vscode/*
 !.vscode/extensions.json
 .idea/
 .DS_Store
@@ -52,3 +49,4 @@ packages/llm/cassettes/**/*.real.json
 
 
 graphify-out
+config.bat
