@@ -50,6 +50,9 @@ const EnvSchema = z.object({
   DEEPSEEK_API_KEY: z.string().optional(),
   LLM_DAILY_BUDGET_USD: z.coerce.number().nonnegative().default(1),
   LLM_MONTHLY_BUDGET_USD: z.coerce.number().nonnegative().default(15),
+  LLM_SEED: z.coerce.number().int().default(1),
+  /** Relative to apps/api's own cwd (the standard `pnpm --filter @jobhunter/api dev` run pattern) -- not resolved via package exports, since packages/llm doesn't export its package root, only its dist entrypoint. */
+  LLM_CASSETTES_DIR: z.string().default("../../packages/llm/cassettes"),
 
   SOURCES_ENABLED: z.string().default(""),
   ADZUNA_APP_ID: z.string().optional(),

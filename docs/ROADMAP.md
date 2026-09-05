@@ -9,7 +9,7 @@ This file tracks status only.
 | 1 | Claim ledger + My Work ⭐ | ✅ done (see note) |
 | 2 | Anti-fabrication validator | ✅ done (see note) |
 | 3 | Seed + ingest + conflicts | ✅ done (see note) |
-| 4 | LLM layer + first AI feature (gap analysis) | ⬜ todo |
+| 4 | LLM layer + first AI feature (gap analysis) | ✅ done (see note) |
 | 5 | Job ingestion (Greenhouse/Lever → Adzuna → free feeds) | ⬜ todo |
 | 6 | Matching (deterministic + LLM explanation) | ⬜ todo |
 | 7 | Dashboard | ⬜ todo |
@@ -102,6 +102,51 @@ the one duplicate row already written was cleaned up by *rejecting* the
 duplicate claim and deleting the redundant experience row — not by deleting
 evidence, which the `evidence_append_only` trigger correctly refused even
 for a Postgres superuser.
+
+**Note on Phase 4**: `packages/llm` is real -- `DeepSeekProvider` (real
+`fetch` to `https://api.deepseek.com/chat/completions`), `withCassette`
+(record/replay, sha256-keyed on provider/model/temperature/seed/messages/schema),
+`estimateCostUsd` (DeepSeek's cache-hit/cache-miss token split, peak-hour
+2x multiplier), and `BudgetGuard` (throws at or above the daily cap) --
+22 tests, all passing. `apps/api/src/modules/llm/llm.service.ts` is the
+one place every feature calls DeepSeek through: it checks
+`getSpentTodayUsd` against the budget guard *before* calling the wrapped
+provider, then records every call (tokens, cost, cassette mode) to the new
+`llm_calls` table (append-only grant, owner-scoped RLS). The wrapped
+provider is injected via a DI token (`LLM_PROVIDER`) rather than
+constructed inline in the service -- see D26 -- which is what let
+`llm.service.spec.ts` (4 tests) exercise the real budget-gate-before-call
+ordering with a fake provider, no cassette file needed.
+
+The first feature, `gap-analysis` (`POST /gap-analysis`), is deliberately
+read-only: it builds a prompt from `v_emittable_claims` (the exact gate
+Phase 8's resume generator will also read from) plus a pasted job
+description wrapped and labeled as untrusted input, and Zod-`.strict()`-
+validates whatever comes back before returning it. 4 tests, all passing.
+
+All of this was proven against real infrastructure, not just typechecked:
+the compiled app was booted against the live database with `LLM_MODE=replay`
+and no `DEEPSEEK_API_KEY` set (this repo's actual `.env` -- i.e. Phase 4's
+literal acceptance-test environment) and driven over real HTTP with a
+minted JWT for the real operator. Three things were confirmed by log
+inspection, not assumption: (1) a normal request correctly read 22 real,
+live `documented` claims out of `v_emittable_claims` and built the exact
+expected prompt; (2) with no matching cassette, it failed with precisely
+the cassette-miss error and re-record instructions -- never a live call;
+(3) with `LLM_DAILY_BUDGET_USD=0`, it threw a clean `400` before the
+cassette lookup ever ran. A cassette was then hand-crafted once to prove
+the full happy path (real claims read → cassette hit → schema-validated
+response → cost written to `llm_calls`, confirmed via
+`GET /llm/spend-today` reflecting the recorded cost) -- and deleted
+immediately after, since matching the real request's cache key meant it
+necessarily contained the real operator's real claim data. See D25–D27.
+
+An incidental finding while doing this manual verification: an ad hoc
+`psql` session querying `v_emittable_claims` directly (without first
+setting `jobhunter.current_user_id`) saw zero rows for the real operator,
+even filtered by his exact `owner_id` -- not a data problem, but
+`verify-claims-integrity.mjs`'s own "a transaction with no owner context
+sees zero rows (RLS fail-safe)" invariant working exactly as designed.
 
 Known gap, deliberately not blocking phase progression: Phase 1's
 "Add-Work UI" deliverable (a page in `apps/web` to add a work entry and see

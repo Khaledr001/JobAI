@@ -73,3 +73,9 @@ GRANT SELECT, INSERT, DELETE ON public.conflict_claims TO jobhunter_app;
 -- (ProjectionService), not in these grants.
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.technology_scores TO jobhunter_app;
 GRANT SELECT, INSERT, UPDATE ON public.profile_versions TO jobhunter_app;
+
+-- llm_calls -- append-only cost ledger (packages/llm's BudgetGuard reads a
+-- SUM() over this; see docs/PATTERNS.md). No UPDATE, no DELETE: a cost
+-- record must never be quietly edited after the fact, for the same reason
+-- evidence is append-only.
+GRANT SELECT, INSERT ON public.llm_calls TO jobhunter_app;

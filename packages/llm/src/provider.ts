@@ -8,42 +8,37 @@
  * local concern in the ingestion/matching pipeline, not part of this
  * interface.
  */
+export type LlmModel = "deepseek-v4-flash" | "deepseek-v4-pro";
+
 export interface LlmMessage {
   role: "system" | "user" | "assistant";
   content: string;
 }
 
 export interface LlmCompleteOptions {
-  model: "deepseek-v4-flash" | "deepseek-v4-pro";
+  model: LlmModel;
   messages: LlmMessage[];
   temperature?: number;
   maxTokens?: number;
-  /** JSON-schema-shaped, for structured extraction. */
+  /** JSON-schema-shaped, for structured extraction via response_format: json_object. */
   responseSchema?: Record<string, unknown>;
+}
+
+export interface LlmUsage {
+  promptTokens: number;
+  completionTokens: number;
+  /** DeepSeek reports this split directly -- see pricing.ts. Always cacheHit + cacheMiss === promptTokens. */
+  cacheHitTokens: number;
+  cacheMissTokens: number;
 }
 
 export interface LlmCompleteResult {
   content: string;
-  promptTokens: number;
-  completionTokens: number;
+  usage: LlmUsage;
   estimatedCostUsd: number;
 }
 
 export interface LlmProvider {
   readonly id: string;
   complete(options: LlmCompleteOptions): Promise<LlmCompleteResult>;
-}
-
-/**
- * STUB -- Phase 4 implements the real DeepSeek client plus the cassette
- * record/replay transport (LLM_MODE=live|record|replay). Throws rather than
- * silently returning fake data, so nothing can mistake this for a working
- * integration.
- */
-export class DeepSeekProvider implements LlmProvider {
-  readonly id = "deepseek";
-
-  complete(_options: LlmCompleteOptions): Promise<LlmCompleteResult> {
-    throw new Error("DeepSeekProvider: not yet implemented (Phase 4)");
-  }
 }

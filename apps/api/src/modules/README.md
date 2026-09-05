@@ -30,7 +30,8 @@ before writing a new module.
 | `taxonomy`     | 1     | ✅ done | Read-only technology/skill node lookup (D14); writes land in Phase 3        |
 | `claims`       | 1     | ✅ done | The claim ledger and evidence; `promote_claim()` is the only gate           |
 | `conflicts`    | 1     | ✅ done | List/resolve conflicting claims; nothing to resolve until Phase 3 seeds any |
-| `llm`          | 4     | ⬜ todo | Provider calls, cassettes, cost accounting, budget guard                    |
+| `llm`          | 4     | ✅ done | Provider calls, cassettes, cost accounting, budget guard                    |
+| `gap-analysis` | 4     | ✅ done | Read-only: verified profile vs. a pasted JD, matched/missing technologies   |
 | `sources`      | 5     | ⬜ todo | Adapter registry, fetch scheduling, raw payload archival                    |
 | `jobs`         | 5     | ⬜ todo | Ingested postings, dedupe, parsing                                          |
 | `matching`     | 6     | ⬜ todo | Deterministic score + LLM explanation (which may not change the score)      |

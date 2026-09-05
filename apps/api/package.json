@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@jobhunter/db": "workspace:*",
+    "@jobhunter/llm": "workspace:*",
     "@jobhunter/shared-types": "workspace:*",
     "@jobhunter/shared-utils": "workspace:*",
     "@nestjs/common": "^11.1.6",
