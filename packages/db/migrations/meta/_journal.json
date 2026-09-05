@@ -15,6 +15,13 @@
       "when": 1788592988447,
       "tag": "0001_nostalgic_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788596389456,
+      "tag": "0002_gigantic_slapstick",
+      "breakpoints": true
     }
   ]
 }

@@ -20,6 +20,7 @@
     "@jobhunter/db": "workspace:*",
     "@jobhunter/llm": "workspace:*",
     "@jobhunter/shared-types": "workspace:*",
+    "@jobhunter/sources": "workspace:*",
     "@jobhunter/shared-utils": "workspace:*",
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",

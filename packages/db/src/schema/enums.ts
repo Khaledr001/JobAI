@@ -3,6 +3,7 @@ import {
   CONFLICT_KINDS,
   CONFLICT_STATUSES,
   EVIDENCE_KINDS,
+  JOB_SOURCE_PROVIDERS,
   PROJECT_STATUSES,
   TAXONOMY_EDGE_RELATIONS,
   TAXONOMY_NODE_KINDS,
@@ -40,3 +41,4 @@ export const taxonomyEdgeRelation = pgEnum(
   TAXONOMY_EDGE_RELATIONS,
 );
 export const techTagRole = pgEnum("tech_tag_role", TECH_TAG_ROLES);
+export const jobSourceProvider = pgEnum("job_source_provider", JOB_SOURCE_PROVIDERS);

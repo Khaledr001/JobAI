@@ -10,6 +10,8 @@ export const ERROR_CODES = {
   UNAUTHORIZED: "UNAUTHORIZED",
   FORBIDDEN: "FORBIDDEN",
   CONFLICT: "CONFLICT",
+  /** A source adapter's raw payload is missing a field its parser requires -- see packages/sources. Never insert a partial row instead. */
+  SOURCE_SCHEMA_DRIFT: "SOURCE_SCHEMA_DRIFT",
   // Domain-specific codes accrue here as phases land, e.g.
   // CLAIM_NOT_EMITTABLE, PROPOSAL_UNGROUNDED, LLM_BUDGET_EXCEEDED.
   INTERNAL: "INTERNAL",

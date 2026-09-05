@@ -1,0 +1,173 @@
+{
+  "name": "seniority-shortfall",
+  "description": "The role wants 6 years; the candidate has 3 -- a real, partial seniority-fit penalty.",
+  "input": {
+    "job": {
+      "title": "Backend Engineer",
+      "location": "Dubai, UAE",
+      "remotePolicy": "onsite",
+      "sponsorshipAvailable": false,
+      "yearsRequired": 6,
+      "domains": [],
+      "technologies": []
+    },
+    "candidate": {
+      "authorizedLocations": [
+        "Dubai",
+        "United Arab Emirates"
+      ],
+      "experienceYears": 3,
+      "domains": [
+        "fintech",
+        "e-commerce"
+      ],
+      "technologies": [
+        {
+          "name": "NestJS",
+          "compositeScore": 0.92,
+          "recencyScore": 0.95,
+          "verification": "documented"
+        },
+        {
+          "name": "TypeScript",
+          "compositeScore": 0.9,
+          "recencyScore": 0.93,
+          "verification": "documented"
+        },
+        {
+          "name": "PostgreSQL",
+          "compositeScore": 0.85,
+          "recencyScore": 0.88,
+          "verification": "documented"
+        },
+        {
+          "name": "Drizzle",
+          "compositeScore": 0.7,
+          "recencyScore": 0.8,
+          "verification": "documented"
+        },
+        {
+          "name": "React",
+          "compositeScore": 0.55,
+          "recencyScore": 0.6,
+          "verification": "attested"
+        }
+      ]
+    },
+    "edges": [
+      {
+        "from": "NestJS",
+        "to": "Node.js",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "NestJS",
+        "to": "TypeScript",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "Angular",
+        "to": "TypeScript",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "Next.js",
+        "to": "React",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "EF Core",
+        "to": "C#",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "EF Core",
+        "to": ".NET",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "C#",
+        "to": ".NET",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "Drizzle",
+        "to": "PostgreSQL",
+        "relation": "implies",
+        "weight": 1
+      },
+      {
+        "from": "Drizzle",
+        "to": "EF Core",
+        "relation": "adjacent",
+        "weight": 0.4
+      },
+      {
+        "from": "EF Core",
+        "to": "Drizzle",
+        "relation": "adjacent",
+        "weight": 0.4
+      },
+      {
+        "from": "PostgreSQL",
+        "to": "MongoDB",
+        "relation": "adjacent",
+        "weight": 0.25
+      },
+      {
+        "from": "MongoDB",
+        "to": "PostgreSQL",
+        "relation": "adjacent",
+        "weight": 0.25
+      },
+      {
+        "from": "NATS",
+        "to": "RabbitMQ",
+        "relation": "adjacent",
+        "weight": 0.7
+      },
+      {
+        "from": "RabbitMQ",
+        "to": "NATS",
+        "relation": "adjacent",
+        "weight": 0.7
+      },
+      {
+        "from": "Angular",
+        "to": "React",
+        "relation": "adjacent",
+        "weight": 0.5
+      },
+      {
+        "from": "React",
+        "to": "Angular",
+        "relation": "adjacent",
+        "weight": 0.5
+      }
+    ]
+  },
+  "expected": {
+    "headline": 80,
+    "band": "strong",
+    "gates": {
+      "passed": true,
+      "failures": []
+    },
+    "subScores": {
+      "stackFit": 1,
+      "recencyFit": 1,
+      "seniorityFit": 0,
+      "domainOverlap": 1
+    },
+    "matched": [],
+    "missing": [],
+    "scorerVersion": "matching-v1"
+  }
+}

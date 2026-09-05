@@ -20,3 +20,21 @@ CREATE TRIGGER evidence_no_mutate
   BEFORE UPDATE OR DELETE ON public.evidence
   FOR EACH ROW
   EXECUTE FUNCTION public.evidence_append_only();
+
+-- Same two-layer append-only pattern as evidence, for job_raw (PLAN.md's
+-- "rawPayload + payloadHash always retained" -- see schema/jobs.ts).
+CREATE OR REPLACE FUNCTION public.job_raw_append_only()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'job_raw is append-only: % is not permitted on public.job_raw', TG_OP
+    USING ERRCODE = 'insufficient_privilege';
+END
+$$;
+
+DROP TRIGGER IF EXISTS job_raw_no_mutate ON public.job_raw;
+CREATE TRIGGER job_raw_no_mutate
+  BEFORE UPDATE OR DELETE ON public.job_raw
+  FOR EACH ROW
+  EXECUTE FUNCTION public.job_raw_append_only();

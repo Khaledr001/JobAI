@@ -79,3 +79,13 @@ GRANT SELECT, INSERT, UPDATE ON public.profile_versions TO jobhunter_app;
 -- record must never be quietly edited after the fact, for the same reason
 -- evidence is append-only.
 GRANT SELECT, INSERT ON public.llm_calls TO jobhunter_app;
+
+-- jobs -- global reference data, not owner-scoped (see schema/jobs.ts).
+-- company_ats / job_canonical / job_source_listing are ordinary upsert
+-- targets (a re-ingest updates last_seen_at, title, description, ...).
+-- job_raw is append-only, same two-layer pattern as evidence: no UPDATE,
+-- no DELETE grant, and sql/03-triggers.sql's trigger backstop.
+GRANT SELECT, INSERT, UPDATE ON public.company_ats TO jobhunter_app;
+GRANT SELECT, INSERT ON public.job_raw TO jobhunter_app;
+GRANT SELECT, INSERT, UPDATE ON public.job_canonical TO jobhunter_app;
+GRANT SELECT, INSERT, UPDATE ON public.job_source_listing TO jobhunter_app;

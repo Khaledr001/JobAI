@@ -115,3 +115,12 @@ export type TaxonomyEdgeRelation = z.infer<typeof TaxonomyEdgeRelationSchema>;
 export const TECH_TAG_ROLES = asConst(["primary", "supporting", "incidental"]);
 export const TechTagRoleSchema = z.enum(TECH_TAG_ROLES);
 export type TechTagRole = z.infer<typeof TechTagRoleSchema>;
+
+/**
+ * Tier-1 public ATS JSON APIs only (PLAN.md §Job ingestion) -- no auth, no
+ * ToS conflict. Adzuna/free feeds (tier 2) and assisted browser sources
+ * (tier 3, D6) are added to this list only when their adapters land.
+ */
+export const JOB_SOURCE_PROVIDERS = asConst(["greenhouse", "lever"]);
+export const JobSourceProviderSchema = z.enum(JOB_SOURCE_PROVIDERS);
+export type JobSourceProvider = z.infer<typeof JobSourceProviderSchema>;

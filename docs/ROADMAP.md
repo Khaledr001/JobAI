@@ -10,8 +10,8 @@ This file tracks status only.
 | 2 | Anti-fabrication validator | ✅ done (see note) |
 | 3 | Seed + ingest + conflicts | ✅ done (see note) |
 | 4 | LLM layer + first AI feature (gap analysis) | ✅ done (see note) |
-| 5 | Job ingestion (Greenhouse/Lever → Adzuna → free feeds) | ⬜ todo |
-| 6 | Matching (deterministic + LLM explanation) | ⬜ todo |
+| 5 | Job ingestion (Greenhouse/Lever → Adzuna → free feeds) | ✅ done, Greenhouse+Lever only (see note) |
+| 6 | Matching (deterministic + LLM explanation) | ✅ done, deterministic scorer only (see note) |
 | 7 | Dashboard | ⬜ todo |
 | 8 | Tailored documents | ⬜ todo |
 | 9 | Approval + applications | ⬜ todo |
@@ -147,6 +147,96 @@ setting `jobhunter.current_user_id`) saw zero rows for the real operator,
 even filtered by his exact `owner_id` -- not a data problem, but
 `verify-claims-integrity.mjs`'s own "a transaction with no owner context
 sees zero rows (RLS fail-safe)" invariant working exactly as designed.
+
+**Note on Phase 5**: `packages/sources` has real Greenhouse and Lever
+adapters (`boards-api.greenhouse.io`, `api.lever.co` -- both public,
+unauthenticated tier-1 APIs, verified live against real boards, Sept
+2026), a plain-text sanitizer for Greenhouse's double-HTML-entity-escaped
+`content` field, and a `strongDedupKey()` (company+title+location). 25
+tests, all against real recorded fixtures (a trimmed real Mixpanel
+Greenhouse board, a real 3-posting Gynger Lever board) -- MockAgent from
+PLAN.md's original sketch was swapped for an injected `fetchImpl`, matching
+`packages/llm`'s own `deepseek.spec.ts` precedent for the same shape of
+problem (D28). Only Greenhouse and Lever landed this phase, per PLAN.md's
+own instruction to do "one adapter end-to-end before writing a second" --
+Adzuna and the free feeds are next, not started.
+
+`packages/db/src/schema/jobs.ts` adds `company_ats`/`job_raw`/
+`job_canonical`/`job_source_listing`, global reference data with no RLS
+(D29) -- `job_raw` append-only via the same two-layer pattern as `evidence`,
+confirmed against real Postgres the same way D24 confirmed it for evidence
+(both the app role and a superuser session were refused). `apps/api`'s new
+`jobs` module (`POST /jobs/ingest`, `GET /jobs`) does the dedup upsert via
+an `xmax = 0` insert/update tell (D30).
+
+Proven twice against real infrastructure, not just typechecked:
+`scripts/verify-sources-integrity.mjs` (synthetic fixture rows, rerunnable,
+excluded from `pnpm verify` like `verify-claims-integrity.mjs` since it
+needs real Postgres) proves the three-run dedup story end to end --
+insert, no-op re-fetch, and a payload change that appends to `job_raw`
+without duplicating `job_canonical`. Separately, the compiled app was
+booted against the real database and `POST /jobs/ingest` was called twice,
+back to back, against Greenhouse's real public Mixpanel board: first call
+`{discovered: 84, rawInserted: 84, canonicalInserted: 84}`, second call
+(same board, no changes) `{discovered: 84, rawInserted: 0, rawSkipped: 84,
+canonicalInserted: 0, canonicalUpdated: 84}` -- exactly PLAN.md's acceptance
+test, against the real API and the real code path, not a mock. Those 84
+real postings were left in the database (public job listings, no privacy
+concern, unlike Phase 4's LLM cassette) as genuine proof-of-concept
+content rather than deleted as test debris.
+
+Known gaps, deliberately not blocking phase progression: no `fetchDetail`
+(Greenhouse's `content=true` already returns full descriptions inline, so
+nothing needs it yet -- would matter once application-question drafting,
+Phase 9, needs Greenhouse's `questions=true` detail endpoint); no
+`company_ats` registry rows written yet (the `POST /jobs/ingest` route
+takes a provider+boardToken directly rather than looking one up -- wiring
+a registry-driven scheduled fan-out is a BullMQ/queue concern, intentionally
+deferred past this phase, see PLAN.md's Queues section); no repost/
+`supersedesId` linking exercised (would need a job to actually close and
+reappear >45 days later, which real data can't demonstrate on demand).
+
+**Note on Phase 6**: `packages/matching` is real and pure -- `gates.ts`
+(Stage 0: location/authorization and excluded-stack gates, free, run
+before any scoring), `coverage.ts` + `score.ts` (Stage 1: single-hop
+graph-expanded `stackFit`, plus `recencyFit`/`seniorityFit`/`domainOverlap`,
+all four sub-scores surviving to the explanation rather than blended
+away), and `explain.ts` (ties gates+score into `MatchExplanation`,
+`headline` bounded 0-100 by construction). 28 unit/property tests, all
+passing: the literal PLAN.md gate example (an onsite Toronto job with no
+sponsorship, candidate authorized only in the UAE) is gated, not scored;
+monotonicity (adding a matched technology, or raising a matched
+technology's composite score, never lowers `headline`); permutation
+invariance (reordering `technologies` arrays changes nothing); bounded
+0-100 across a spread of edge cases; and the citation-safety property PLAN.md
+names explicitly -- every `matched[].via` traces back to a real entry in
+the candidate's own technologies, never invented.
+
+`verify:golden` (new, wired into `pnpm verify`) byte-compares 15
+hand-authored, real-taxonomy-grounded profile x job pairs against frozen
+expected output (`packages/matching/golden/*.json`, generated once via
+`packages/matching/scripts/generate-golden.mjs`) -- 15, not PLAN.md's
+sketched 50, the same kind of honest reduction Phase 2 documented for its
+own fixture count (D18). Sabotage-tested the same way Phase 2's validator
+was: temporarily breaking the headline weights (so they summed above 1)
+correctly flipped 11 of 15 cases to a mismatch, proving the gate is real,
+not vacuous (D32).
+
+Also seeded: 23 real `taxonomy_edges` (`packages/db/scripts/seed.ts`)
+against the real 31-node taxonomy Phase 3's ingest produced, applied to
+the live database and confirmed via `psql` -- PLAN.md's own warning that
+an empty edge graph makes every non-exact match silently score 0 (D34).
+
+Known gaps, deliberately not blocking phase progression (D35): no
+LLM-based JD-requirements parsing yet (the scorer's `JobRequirements`
+input is accepted pre-structured; producing it from a real
+`job_canonical.description` -- deterministically or via an LLM -- is
+separate follow-up work); no `apps/api` `matching` module wiring real
+ingested jobs through the scorer end-to-end; no `computedYears`
+derivation (`experienceYears` is a plain input, not computed from
+non-overlapping work ranges); no Stage 2 LLM judgment layer; no
+`search_profiles`. None of these are required by Phase 6's stated
+acceptance test.
 
 Known gap, deliberately not blocking phase progression: Phase 1's
 "Add-Work UI" deliverable (a page in `apps/web` to add a work entry and see

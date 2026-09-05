@@ -10,6 +10,7 @@ import { ClaimsModule } from "./modules/claims/claims.module.js";
 import { ConflictsModule } from "./modules/conflicts/conflicts.module.js";
 import { GapAnalysisModule } from "./modules/gap-analysis/gap-analysis.module.js";
 import { HealthModule } from "./modules/health/health.module.js";
+import { JobsModule } from "./modules/jobs/jobs.module.js";
 import { LlmModule } from "./modules/llm/llm.module.js";
 import { ProfileModule } from "./modules/profile/profile.module.js";
 import { TaxonomyModule } from "./modules/taxonomy/taxonomy.module.js";
@@ -63,6 +64,7 @@ void processRole; // referenced once WorkerModule exists; see comment above
     ConflictsModule,
     LlmModule,
     GapAnalysisModule,
+    JobsModule,
     // ...(processRole !== "api" ? [WorkerModule] : []),
   ],
   providers: [

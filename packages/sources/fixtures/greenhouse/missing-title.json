@@ -1,0 +1,11 @@
+{
+  "jobs": [
+    {
+      "id": 9999999,
+      "absolute_url": "https://job-boards.greenhouse.io/example/jobs/9999999",
+      "location": { "name": "Remote" },
+      "content": "&lt;p&gt;Some content&lt;/p&gt;",
+      "updated_at": "2026-01-01T00:00:00-05:00"
+    }
+  ]
+}

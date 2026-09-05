@@ -32,8 +32,7 @@ before writing a new module.
 | `conflicts`    | 1     | ✅ done | List/resolve conflicting claims; nothing to resolve until Phase 3 seeds any |
 | `llm`          | 4     | ✅ done | Provider calls, cassettes, cost accounting, budget guard                    |
 | `gap-analysis` | 4     | ✅ done | Read-only: verified profile vs. a pasted JD, matched/missing technologies   |
-| `sources`      | 5     | ⬜ todo | Adapter registry, fetch scheduling, raw payload archival                    |
-| `jobs`         | 5     | ⬜ todo | Ingested postings, dedupe, parsing                                          |
+| `jobs`         | 5     | ✅ done | Greenhouse+Lever ingest, dedup upsert (`job_raw`/`job_canonical`)           |
 | `matching`     | 6     | ⬜ todo | Deterministic score + LLM explanation (which may not change the score)      |
 | `documents`    | 8     | ⬜ todo | Tailored resume/cover generation, validated in the write path               |
 | `applications` | 9     | ⬜ todo | Approval gate, state machine, immutable sent-snapshot                       |

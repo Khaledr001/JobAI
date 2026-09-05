@@ -56,6 +56,9 @@ importers:
       '@jobhunter/shared-utils':
         specifier: workspace:*
         version: link:../../packages/shared-utils
+      '@jobhunter/sources':
+        specifier: workspace:*
+        version: link:../../packages/sources
       '@nestjs/common':
         specifier: ^11.1.6
         version: 11.2.3(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -245,6 +248,9 @@ importers:
 
   packages/matching:
     dependencies:
+      '@jobhunter/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       '@jobhunter/shared-utils':
         specifier: workspace:*
         version: link:../shared-utils
@@ -292,6 +298,13 @@ importers:
         version: 3.2.7(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.13)
 
   packages/sources:
+    dependencies:
+      '@jobhunter/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+      '@jobhunter/shared-utils':
+        specifier: workspace:*
+        version: link:../shared-utils
     devDependencies:
       typescript:
         specifier: ^5.9.2

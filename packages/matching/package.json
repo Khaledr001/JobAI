@@ -19,6 +19,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@jobhunter/shared-types": "workspace:*",
     "@jobhunter/shared-utils": "workspace:*"
   },
   "devDependencies": {

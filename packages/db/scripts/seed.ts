@@ -1,10 +1,11 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { createDb } from "../src/client.js";
 import { runAsOwner } from "../src/context.js";
 import {
   profiles,
   profileVersions,
   taxonomyAliases,
+  taxonomyEdges,
   taxonomyNodes,
   users,
 } from "../src/schema/index.js";
@@ -41,6 +42,44 @@ const BOOTSTRAP_TECHNOLOGIES: Array<{ slug: string; name: string; aliases?: stri
     { slug: "nats", name: "NATS" },
     { slug: "mikrotik-api", name: "MikroTik RouterOS API", aliases: ["mikrotik"] },
   ];
+
+/**
+ * PLAN.md's explicit warning: "The edge seed is a hidden dependency. An
+ * empty graph makes every non-exact match score 0, which looks like a
+ * broken scorer. Seed edges before the first scoring run." This is that
+ * seed -- `implies` chains and weighted `adjacent` pairs over the real
+ * bootstrap nodes above, tuned to this operator's actual stack rather than
+ * the full ~120-edge set PLAN.md sketches (a smaller, honest, real seed
+ * beats a padded one -- see docs/DECISIONS.md).
+ */
+const IMPLIES_EDGES: Array<[from: string, to: string]> = [
+  ["NestJS", "TypeScript"],
+  ["NestJS", "Node.js"],
+  ["Angular", "TypeScript"],
+  ["Next.js", "React"],
+  ["EF Core", "C#"],
+  ["EF Core", ".NET"],
+  ["C#", ".NET"],
+  ["MediatR", "C#"],
+  ["Drizzle", "PostgreSQL"],
+  ["BullMQ", "Redis"],
+  ["BullMQ", "Node.js"],
+  ["Socket.IO", "Node.js"],
+  ["Strapi", "Node.js"],
+  ["NgRx", "Angular"],
+];
+
+const ADJACENT_EDGES: Array<[from: string, to: string, weight: number]> = [
+  ["Drizzle", "EF Core", 0.4],
+  ["EF Core", "Drizzle", 0.4],
+  ["PostgreSQL", "MongoDB", 0.25],
+  ["MongoDB", "PostgreSQL", 0.25],
+  ["NATS", "RabbitMQ", 0.7],
+  ["RabbitMQ", "NATS", 0.7],
+  ["Angular", "React", 0.5],
+  ["React", "Angular", 0.5],
+  ["Docker", "Nginx", 0.3],
+];
 
 async function main() {
   const connectionString = process.env.DATABASE_URL_MIGRATOR;
@@ -111,6 +150,60 @@ async function main() {
   }
   console.log(
     `Taxonomy bootstrap: ${createdNodes} new node(s), ${BOOTSTRAP_TECHNOLOGIES.length} total checked.`,
+  );
+
+  // All real nodes, not just this file's bootstrap list -- Phase 3's
+  // real ingest run created many more (MediatR, Socket.IO, Strapi, ...),
+  // and the edge seed below references some of them.
+  const nodeIdByName = new Map<string, string>();
+  for (const node of await db.query.taxonomyNodes.findMany()) {
+    nodeIdByName.set(node.canonicalName, node.id);
+  }
+
+  let createdEdges = 0;
+  const edgeRows: Array<[string, string, "implies" | "adjacent", number]> = [
+    ...IMPLIES_EDGES.map(([from, to]): [string, string, "implies", number] => [
+      from,
+      to,
+      "implies",
+      1,
+    ]),
+    ...ADJACENT_EDGES.map(([from, to, weight]): [string, string, "adjacent", number] => [
+      from,
+      to,
+      "adjacent",
+      weight,
+    ]),
+  ];
+  for (const [fromName, toName, relation, weight] of edgeRows) {
+    const fromId = nodeIdByName.get(fromName);
+    const toId = nodeIdByName.get(toName);
+    if (!fromId || !toId) {
+      console.warn(`Skipping edge ${fromName} -${relation}-> ${toName}: node not found.`);
+      continue;
+    }
+    const existing = await db.query.taxonomyEdges.findFirst({
+      where: and(
+        eq(taxonomyEdges.fromNodeId, fromId),
+        eq(taxonomyEdges.toNodeId, toId),
+        eq(taxonomyEdges.relation, relation),
+      ),
+    });
+    if (existing) continue;
+    await db
+      .insert(taxonomyEdges)
+      .values({ fromNodeId: fromId, toNodeId: toId, relation, weight: weight.toFixed(3) })
+      .onConflictDoNothing({
+        target: [
+          taxonomyEdges.fromNodeId,
+          taxonomyEdges.toNodeId,
+          taxonomyEdges.relation,
+        ],
+      });
+    createdEdges++;
+  }
+  console.log(
+    `Taxonomy edges: ${createdEdges} new edge(s), ${edgeRows.length} total checked.`,
   );
 
   await db.$client.end();

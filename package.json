@@ -30,7 +30,10 @@
     "verify:no-fabrication": "tsx scripts/verify-no-fabrication.mjs",
     "verify:validator": "tsx scripts/verify-validator-mutations.mjs",
     "verify:claims-integrity": "node scripts/verify-claims-integrity.mjs",
-    "verify": "pnpm check:boundaries && pnpm check:privacy && pnpm typecheck && pnpm lint && pnpm test && pnpm verify:no-fabrication && pnpm verify:validator && pnpm build"
+    "verify:sources": "pnpm --filter @jobhunter/sources test",
+    "verify:sources-integrity": "node scripts/verify-sources-integrity.mjs",
+    "verify:golden": "tsx scripts/verify-golden.mjs",
+    "verify": "pnpm check:boundaries && pnpm check:privacy && pnpm typecheck && pnpm lint && pnpm test && pnpm verify:no-fabrication && pnpm verify:validator && pnpm verify:sources && pnpm verify:golden && pnpm build"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
