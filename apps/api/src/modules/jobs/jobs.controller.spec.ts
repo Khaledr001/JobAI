@@ -7,16 +7,21 @@ describe("JobsController", () => {
   async function build() {
     const ingestFromAdapter = vi.fn().mockResolvedValue({ discovered: 0 });
     const listCanonicalJobs = vi.fn().mockResolvedValue([]);
+    const getCanonicalJob = vi.fn().mockResolvedValue({ id: "job-1" });
     const moduleRef = await Test.createTestingModule({
       controllers: [JobsController],
       providers: [
-        { provide: JobsService, useValue: { ingestFromAdapter, listCanonicalJobs } },
+        {
+          provide: JobsService,
+          useValue: { ingestFromAdapter, listCanonicalJobs, getCanonicalJob },
+        },
       ],
     }).compile();
     return {
       controller: moduleRef.get(JobsController),
       ingestFromAdapter,
       listCanonicalJobs,
+      getCanonicalJob,
     };
   }
 
@@ -40,5 +45,11 @@ describe("JobsController", () => {
     const { controller, listCanonicalJobs } = await build();
     await controller.list();
     expect(listCanonicalJobs).toHaveBeenCalledOnce();
+  });
+
+  it("delegates get(id) to the service", async () => {
+    const { controller, getCanonicalJob } = await build();
+    await controller.get("job-1");
+    expect(getCanonicalJob).toHaveBeenCalledWith("job-1");
   });
 });

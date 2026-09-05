@@ -37,7 +37,9 @@ DECLARE
     'claims', 'evidence',
     'conflicts', 'conflict_positions', 'conflict_claims',
     'technology_scores', 'profile_versions',
-    'llm_calls'
+    'llm_calls',
+    'documents', 'document_spans',
+    'applications', 'application_transitions'
   ];
 BEGIN
   FOREACH owner_scoped_table IN ARRAY owner_scoped_tables

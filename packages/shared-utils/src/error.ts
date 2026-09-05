@@ -12,6 +12,10 @@ export const ERROR_CODES = {
   CONFLICT: "CONFLICT",
   /** A source adapter's raw payload is missing a field its parser requires -- see packages/sources. Never insert a partial row instead. */
   SOURCE_SCHEMA_DRIFT: "SOURCE_SCHEMA_DRIFT",
+  /** A generated document failed @jobhunter/claims' validate() twice (the original draft and one retry-with-violations) -- surfaced to the operator instead of ever being persisted or rendered. */
+  DOCUMENT_VALIDATION_FAILED: "DOCUMENT_VALIDATION_FAILED",
+  /** Requested application status change isn't a legal move from the application's current status -- see @jobhunter/shared-utils' APPLICATION_TRANSITIONS. */
+  ILLEGAL_APPLICATION_TRANSITION: "ILLEGAL_APPLICATION_TRANSITION",
   // Domain-specific codes accrue here as phases land, e.g.
   // CLAIM_NOT_EMITTABLE, PROPOSAL_UNGROUNDED, LLM_BUDGET_EXCEEDED.
   INTERNAL: "INTERNAL",

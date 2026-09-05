@@ -18,4 +18,6 @@ export * from "./conflicts.js";
 export * from "./profile_index.js";
 export * from "./llm.js";
 export * from "./jobs.js";
+export * from "./documents.js";
+export * from "./applications.js";
 export * from "./relations.js";

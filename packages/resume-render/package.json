@@ -22,7 +22,12 @@
     "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist"
   },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "pdfkit": "^0.20.2"
+  },
   "devDependencies": {
+    "@types/pdfkit": "^0.17.6",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }

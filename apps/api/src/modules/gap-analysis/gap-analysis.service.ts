@@ -33,7 +33,7 @@ export class GapAnalysisService {
   async analyze(ownerId: string, dto: AnalyzeGapDto): Promise<GapAnalysisResult> {
     const claims = await runAsOwner(this.db, ownerId, (tx) =>
       tx.execute<{ subject: string; statement: string }>(
-        sql`SELECT subject, statement FROM v_emittable_claims WHERE owner_id = ${ownerId}::uuid ORDER BY subject`,
+        sql`SELECT subject, statement FROM v_emittable_claims WHERE owner_id = ${ownerId}::uuid ORDER BY subject, id`,
       ),
     );
 

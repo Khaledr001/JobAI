@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { AppError, ERROR_CODES } from "@jobhunter/shared-utils";
 import {
   createGreenhouseAdapter,
@@ -35,5 +35,10 @@ export class JobsController {
   @Get()
   list() {
     return this.jobsService.listCanonicalJobs();
+  }
+
+  @Get(":id")
+  get(@Param("id") id: string) {
+    return this.jobsService.getCanonicalJob(id);
   }
 }

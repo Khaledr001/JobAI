@@ -38,3 +38,43 @@ CREATE TRIGGER job_raw_no_mutate
   BEFORE UPDATE OR DELETE ON public.job_raw
   FOR EACH ROW
   EXECUTE FUNCTION public.job_raw_append_only();
+
+-- Same two-layer append-only pattern, for document_spans (PLAN.md Phase 8:
+-- a generated document's citations are historical fact once written --
+-- see schema/documents.ts). Citation VALIDATION (every claim_id must exist,
+-- be emittable, and predate generation) is a separate concern, a separate
+-- trigger, in sql/04-functions.sql -- this one only forbids mutation.
+CREATE OR REPLACE FUNCTION public.document_spans_append_only()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'document_spans is append-only: % is not permitted on public.document_spans', TG_OP
+    USING ERRCODE = 'insufficient_privilege';
+END
+$$;
+
+DROP TRIGGER IF EXISTS document_spans_no_mutate ON public.document_spans;
+CREATE TRIGGER document_spans_no_mutate
+  BEFORE UPDATE OR DELETE ON public.document_spans
+  FOR EACH ROW
+  EXECUTE FUNCTION public.document_spans_append_only();
+
+-- Same two-layer append-only pattern, for application_transitions (PLAN.md
+-- Phase 9: the audit trail of what actually happened to a real
+-- application is historical fact once recorded -- see schema/applications.ts).
+CREATE OR REPLACE FUNCTION public.application_transitions_append_only()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'application_transitions is append-only: % is not permitted on public.application_transitions', TG_OP
+    USING ERRCODE = 'insufficient_privilege';
+END
+$$;
+
+DROP TRIGGER IF EXISTS application_transitions_no_mutate ON public.application_transitions;
+CREATE TRIGGER application_transitions_no_mutate
+  BEFORE UPDATE OR DELETE ON public.application_transitions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.application_transitions_append_only();

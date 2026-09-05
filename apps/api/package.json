@@ -14,11 +14,15 @@
     "test": "vitest run --passWithNoTests",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "hash-password": "tsx scripts/hash-password.ts",
+    "backfill-technology-scores": "tsx scripts/backfill-technology-scores.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@jobhunter/claims": "workspace:*",
     "@jobhunter/db": "workspace:*",
     "@jobhunter/llm": "workspace:*",
+    "@jobhunter/matching": "workspace:*",
+    "@jobhunter/resume-render": "workspace:*",
     "@jobhunter/shared-types": "workspace:*",
     "@jobhunter/sources": "workspace:*",
     "@jobhunter/shared-utils": "workspace:*",

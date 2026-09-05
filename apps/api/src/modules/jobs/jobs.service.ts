@@ -182,4 +182,14 @@ export class JobsService {
       limit,
     });
   }
+
+  async getCanonicalJob(jobId: string) {
+    const job = await this.db.query.jobCanonical.findFirst({
+      where: eq(schema.jobCanonical.id, jobId),
+    });
+    if (!job) {
+      throw new AppError(ERROR_CODES.NOT_FOUND, `Job ${jobId} not found`);
+    }
+    return job;
+  }
 }

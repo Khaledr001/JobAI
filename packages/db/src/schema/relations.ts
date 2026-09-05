@@ -2,6 +2,8 @@ import { relations } from "drizzle-orm";
 import { claims } from "./claims.js";
 import { evidence } from "./evidence.js";
 import { conflictClaims, conflictPositions, conflicts } from "./conflicts.js";
+import { documentSpans, documents } from "./documents.js";
+import { applicationTransitions, applications } from "./applications.js";
 import { technologyScores } from "./profile_index.js";
 import { projectEpochs, projects } from "./projects.js";
 import { taxonomyAliases, taxonomyEdges, taxonomyNodes } from "./taxonomy.js";
@@ -115,3 +117,32 @@ export const conflictClaimsRelations = relations(conflictClaims, ({ one }) => ({
   }),
   claim: one(claims, { fields: [conflictClaims.claimId], references: [claims.id] }),
 }));
+
+export const documentsRelations = relations(documents, ({ many }) => ({
+  spans: many(documentSpans),
+}));
+
+export const documentSpansRelations = relations(documentSpans, ({ one }) => ({
+  document: one(documents, {
+    fields: [documentSpans.documentId],
+    references: [documents.id],
+  }),
+}));
+
+export const applicationsRelations = relations(applications, ({ one, many }) => ({
+  document: one(documents, {
+    fields: [applications.documentId],
+    references: [documents.id],
+  }),
+  transitions: many(applicationTransitions),
+}));
+
+export const applicationTransitionsRelations = relations(
+  applicationTransitions,
+  ({ one }) => ({
+    application: one(applications, {
+      fields: [applicationTransitions.applicationId],
+      references: [applications.id],
+    }),
+  }),
+);

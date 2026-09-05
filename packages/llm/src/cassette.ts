@@ -27,7 +27,16 @@ interface CassetteFile {
   recordedAt: string;
 }
 
-function cassetteKey(
+/**
+ * Exported (not just an internal helper of `withCassette`) so a caller that
+ * needs to record the exact cache key a real completion used -- Phase 9's
+ * `documents.cassetteKey` column, frozen into an application's immutable
+ * approval snapshot -- can compute it independently, with the exact same
+ * inputs it already has in hand, rather than plumbing the key back out of
+ * `LlmCompleteResult` (which is deliberately transport-only, PLAN.md's
+ * packages/llm boundary).
+ */
+export function computeCassetteKey(
   providerId: string,
   options: LlmCompleteOptions,
   seed: number,
@@ -70,7 +79,7 @@ export function withCassette(
   return {
     id: provider.id,
     async complete(completeOptions: LlmCompleteOptions): Promise<LlmCompleteResult> {
-      const key = cassetteKey(provider.id, completeOptions, seed);
+      const key = computeCassetteKey(provider.id, completeOptions, seed);
       const path = cassettePath(options.cassettesDir, key);
 
       if (options.mode === "live") {

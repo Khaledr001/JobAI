@@ -124,3 +124,33 @@ export type TechTagRole = z.infer<typeof TechTagRoleSchema>;
 export const JOB_SOURCE_PROVIDERS = asConst(["greenhouse", "lever"]);
 export const JobSourceProviderSchema = z.enum(JOB_SOURCE_PROVIDERS);
 export type JobSourceProvider = z.infer<typeof JobSourceProviderSchema>;
+
+export const DOCUMENT_KINDS = asConst(["resume", "cover_letter"]);
+export const DocumentKindSchema = z.enum(DOCUMENT_KINDS);
+export type DocumentKind = z.infer<typeof DocumentKindSchema>;
+
+/** Must match packages/claims' `DocumentSpanSchema.kind` exactly -- both describe the same span. */
+export const DOCUMENT_SPAN_KINDS = asConst(["summary", "bullet"]);
+export const DocumentSpanKindSchema = z.enum(DOCUMENT_SPAN_KINDS);
+export type DocumentSpanKind = z.infer<typeof DocumentSpanKindSchema>;
+
+/**
+ * PLAN.md's state machine. `approved` is the one transition that freezes
+ * an immutable snapshot (packages/db/src/schema/applications.ts); `offer`,
+ * `rejected`, and `ghosted` are terminal -- see `APPLICATION_TRANSITIONS`
+ * in that same file for exactly which transitions between these are legal.
+ */
+export const APPLICATION_STATUSES = asConst([
+  "discovered",
+  "matched",
+  "drafted",
+  "approved",
+  "applied",
+  "replied",
+  "interviewing",
+  "offer",
+  "rejected",
+  "ghosted",
+]);
+export const ApplicationStatusSchema = z.enum(APPLICATION_STATUSES);
+export type ApplicationStatus = z.infer<typeof ApplicationStatusSchema>;

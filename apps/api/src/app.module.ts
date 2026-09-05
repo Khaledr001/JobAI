@@ -5,13 +5,16 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { validateEnv, type AppEnv } from "./config/env.js";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard.js";
 import { DatabaseModule } from "./database/database.module.js";
+import { ApplicationsModule } from "./modules/applications/applications.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { ClaimsModule } from "./modules/claims/claims.module.js";
 import { ConflictsModule } from "./modules/conflicts/conflicts.module.js";
+import { DocumentsModule } from "./modules/documents/documents.module.js";
 import { GapAnalysisModule } from "./modules/gap-analysis/gap-analysis.module.js";
 import { HealthModule } from "./modules/health/health.module.js";
 import { JobsModule } from "./modules/jobs/jobs.module.js";
 import { LlmModule } from "./modules/llm/llm.module.js";
+import { MatchingModule } from "./modules/matching/matching.module.js";
 import { ProfileModule } from "./modules/profile/profile.module.js";
 import { TaxonomyModule } from "./modules/taxonomy/taxonomy.module.js";
 import { WorkModule } from "./modules/work/work.module.js";
@@ -65,6 +68,9 @@ void processRole; // referenced once WorkerModule exists; see comment above
     LlmModule,
     GapAnalysisModule,
     JobsModule,
+    MatchingModule,
+    DocumentsModule,
+    ApplicationsModule,
     // ...(processRole !== "api" ? [WorkerModule] : []),
   ],
   providers: [

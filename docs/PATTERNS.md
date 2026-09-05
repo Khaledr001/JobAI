@@ -118,3 +118,20 @@ pure — their specs need no database, no network, and run in the default
 Next.js App Router, client components + TanStack Query against
 `apps/web/src/lib/api-client.ts`. No server actions — matches the reference
 repo's convention, and keeps every data access path visible in one client.
+
+Auth is a bearer JWT in `localStorage` (`api-client.ts`'s `getAccessToken`/
+`setTokens`), attached as `Authorization: Bearer <token>` on every request —
+apps/api's `JwtStrategy` only reads that header, never a cookie. Pages needing
+auth call `useAuthGuard()`, which redirects to `/login` client-side after
+mount (there is no middleware — this is a static-shell app).
+
+**Import extensions differ from the rest of the repo.** `apps/api` and every
+`packages/*` use explicit `.js`-suffixed relative imports (Node ESM /
+`NodeNext` convention: `import { x } from "./y.js"` even though `y.ts` is
+the real file). `apps/web` does **not** — it uses Next's own `bundler`
+module resolution, and Turbopack's resolver does not alias a `.js` import
+back to a sibling `.ts` file the way `tsc`'s `bundler` mode tolerates for
+type-checking. An extension-suffixed import in `apps/web` passes `tsc
+--noEmit` cleanly and then fails at `next build`/`next dev` with "Module
+not found" — see docs/DECISIONS.md D37. Every `apps/web` import must be
+extension-less (`"@/lib/api-client"`, `"./nav-bar"`).

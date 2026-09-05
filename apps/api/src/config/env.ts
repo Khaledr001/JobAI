@@ -54,6 +54,9 @@ const EnvSchema = z.object({
   /** Relative to apps/api's own cwd (the standard `pnpm --filter @jobhunter/api dev` run pattern) -- not resolved via package exports, since packages/llm doesn't export its package root, only its dist entrypoint. */
   LLM_CASSETTES_DIR: z.string().default("../../packages/llm/cassettes"),
 
+  /** Generated PDFs/DOCX live on local disk, not S3/MinIO (no object storage running yet -- see docs/DECISIONS.md). Relative to apps/api's own cwd, same convention as LLM_CASSETTES_DIR. */
+  DOCUMENTS_DIR: z.string().default("../../data/generated"),
+
   SOURCES_ENABLED: z.string().default(""),
   ADZUNA_APP_ID: z.string().optional(),
   ADZUNA_APP_KEY: z.string().optional(),

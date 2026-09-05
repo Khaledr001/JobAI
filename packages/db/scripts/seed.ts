@@ -22,13 +22,20 @@ import {
 
 const BOOTSTRAP_TECHNOLOGIES: Array<{ slug: string; name: string; aliases?: string[] }> =
   [
+    // "next" and "ts" are dropped as aliases, not just here but deleted from
+    // the real, already-seeded taxonomy_aliases table below: both are plain
+    // English words/abbreviations far more likely to appear in ordinary JD
+    // prose than as a genuine Next.js/TypeScript mention. Found for real by
+    // apps/api's requirement-extraction matching "the next step in your
+    // career" to Next.js against a live-ingested Greenhouse posting
+    // (docs/DECISIONS.md).
     { slug: "nestjs", name: "NestJS", aliases: ["nest.js", "nest"] },
-    { slug: "typescript", name: "TypeScript", aliases: ["ts"] },
+    { slug: "typescript", name: "TypeScript" },
     { slug: "nodejs", name: "Node.js", aliases: ["node"] },
     { slug: "postgresql", name: "PostgreSQL", aliases: ["postgres"] },
     { slug: "drizzle-orm", name: "Drizzle", aliases: ["drizzle-orm"] },
     { slug: "redis", name: "Redis" },
-    { slug: "nextjs", name: "Next.js", aliases: ["next.js", "next"] },
+    { slug: "nextjs", name: "Next.js", aliases: ["next.js"] },
     { slug: "react", name: "React" },
     { slug: "angular", name: "Angular" },
     { slug: "docker", name: "Docker" },

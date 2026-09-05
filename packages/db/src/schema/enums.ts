@@ -1,7 +1,10 @@
 import {
+  APPLICATION_STATUSES,
   CLAIM_KINDS,
   CONFLICT_KINDS,
   CONFLICT_STATUSES,
+  DOCUMENT_KINDS,
+  DOCUMENT_SPAN_KINDS,
   EVIDENCE_KINDS,
   JOB_SOURCE_PROVIDERS,
   PROJECT_STATUSES,
@@ -42,3 +45,6 @@ export const taxonomyEdgeRelation = pgEnum(
 );
 export const techTagRole = pgEnum("tech_tag_role", TECH_TAG_ROLES);
 export const jobSourceProvider = pgEnum("job_source_provider", JOB_SOURCE_PROVIDERS);
+export const documentKind = pgEnum("document_kind", DOCUMENT_KINDS);
+export const documentSpanKind = pgEnum("document_span_kind", DOCUMENT_SPAN_KINDS);
+export const applicationStatus = pgEnum("application_status", APPLICATION_STATUSES);

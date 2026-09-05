@@ -89,3 +89,19 @@ GRANT SELECT, INSERT, UPDATE ON public.company_ats TO jobhunter_app;
 GRANT SELECT, INSERT ON public.job_raw TO jobhunter_app;
 GRANT SELECT, INSERT, UPDATE ON public.job_canonical TO jobhunter_app;
 GRANT SELECT, INSERT, UPDATE ON public.job_source_listing TO jobhunter_app;
+
+-- documents -- ordinary rows (a re-render could reasonably update the file
+-- paths later, e.g. after a font/layout fix). document_spans is
+-- append-only, same two-layer pattern as evidence/job_raw: no UPDATE, no
+-- DELETE grant, plus sql/03-triggers.sql's trigger backstop -- a
+-- generated document's citations are historical fact once written.
+GRANT SELECT, INSERT, UPDATE ON public.documents TO jobhunter_app;
+GRANT SELECT, INSERT ON public.document_spans TO jobhunter_app;
+
+-- applications -- status is a normal mutable column, gated by the
+-- applications_validate_transition trigger (sql/04-functions.sql) to only
+-- ever move between LEGAL states. application_transitions is append-only,
+-- same reasoning as document_spans: the audit trail of what actually
+-- happened is historical fact, never edited.
+GRANT SELECT, INSERT, UPDATE ON public.applications TO jobhunter_app;
+GRANT SELECT, INSERT ON public.application_transitions TO jobhunter_app;

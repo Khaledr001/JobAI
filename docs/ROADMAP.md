@@ -12,9 +12,9 @@ This file tracks status only.
 | 4 | LLM layer + first AI feature (gap analysis) | ✅ done (see note) |
 | 5 | Job ingestion (Greenhouse/Lever → Adzuna → free feeds) | ✅ done, Greenhouse+Lever only (see note) |
 | 6 | Matching (deterministic + LLM explanation) | ✅ done, deterministic scorer only (see note) |
-| 7 | Dashboard | ⬜ todo |
-| 8 | Tailored documents | ⬜ todo |
-| 9 | Approval + applications | ⬜ todo |
+| 7 | Dashboard | ✅ done, real data end-to-end (see note) |
+| 8 | Tailored documents | ✅ done, real data end-to-end (see note) |
+| 9 | Approval + applications | ✅ done, state machine + snapshot real (see note) |
 | 10 | Email + follow-up | ⬜ todo |
 | 11 | Analytics feedback loop | ⬜ todo |
 | 12 | Recruiter intelligence — **optional** | ⬜ todo |
@@ -237,6 +237,150 @@ derivation (`experienceYears` is a plain input, not computed from
 non-overlapping work ranges); no Stage 2 LLM judgment layer; no
 `search_profiles`. None of these are required by Phase 6's stated
 acceptance test.
+
+**Note on Phase 7**: closes D35's deferred gap first -- a new `apps/api`
+`matching` module (`MatchingService`) wires Phase 6's pure scorer to real
+data: a deterministic keyword-scan requirement extractor
+(`requirement-extraction.ts`, 7 tests), real `technology_scores`/
+`taxonomy_edges`/`experiences` for the candidate side, and a new
+`relevantProjects` enrichment (ranked real projects each citing a real
+work entry, PLAN.md's literal acceptance-test phrase). Then the actual
+dashboard: `apps/web` gained a real bearer-JWT auth flow (`/login`,
+`localStorage`, `useAuthGuard`), a Jobs list, a job detail page (matched ✓
+with JD quote / missing ⚠ / ranked projects), a My Work page (technology
+scores + recent work entries), and a Conflicts page with a working
+resolve action -- `next build` type-checks and statically generates all
+7 routes.
+
+Two real, non-obvious bugs surfaced by testing against real data rather
+than fixtures, both fixed and documented as decisions:
+
+- **`technology_scores` was empty for the real operator** despite 243 real
+  work entries and 184 real technology taggings existing -- Phase 3's bulk
+  ingest never triggers the projection recompute the ordinary API write
+  path calls. Every real job match was scoring every required technology
+  MISSING regardless of real, confirmed work. Fixed with a reusable,
+  idempotent backfill script, not a one-off query (D36).
+- **A false-positive requirement match**: the taxonomy alias "next" (for
+  Next.js) matched the plain English phrase "the next step" in a real
+  Greenhouse posting; "ts" (TypeScript) had the same risk. Both aliases
+  were removed from the seed and deleted from the already-seeded
+  `taxonomy_aliases` table.
+
+After both fixes, a real live Mixpanel posting ("Senior Software Engineer,
+AI Product Insights") scored 79/100 ("worth_applying"), correctly citing
+the operator's real TypeScript/React work and correctly ranking real
+projects (Chat Application, Mazarini, Inventra, ...) each citing a real,
+dated work entry -- the exact shape PLAN.md's acceptance test describes.
+
+Known gap, disclosed rather than assumed away: **no browser was used to
+verify the frontend.** This session has no browser-automation tool
+available. Verification that *was* done: `next build`'s own type-check
+and static-generation pass for all 7 routes, `next lint` clean, a booted
+`next dev` server returning 200 for every route with `CHOKIDAR_USEPOLLING`/
+`WATCHPACK_POLLING` set (this mount's inotify gap, root CLAUDE.md), the
+`/login` route's server-rendered HTML containing its real form markup,
+and confirming via server logs that every route compiles and serves
+without a runtime exception. What was **not** verified: that the pages
+render correctly after client-side hydration, that TanStack Query's
+requests actually populate the DOM as designed, or any interactive flow
+(logging in, clicking "resolve", the token round-trip) in an actual
+browser. This should be the first thing done, by a human or a
+browser-capable session, before trusting this dashboard beyond the API
+contracts it's built on.
+
+Known gaps, deliberately not blocking phase progression: the Jobs page
+is one undifferentiated list -- PLAN.md's recommended/new/saved/rejected
+tabs need a per-operator job status this system doesn't have until Phase
+9's applications state machine exists. No pagination anywhere (fine at
+current real data volume: 90 jobs, 243 work entries).
+
+**Note on Phase 8**: the full generator loop from PLAN.md's diagram is real
+-- `apps/api`'s new `documents` module reads `v_emittable_claims`, drafts
+via `LlmService` (v4-pro), runs the draft through `@jobhunter/claims`'
+real `validate()` in the write path, retries once with violations appended
+to the prompt on failure, and only then renders (real `pdfkit`/`docx`,
+D39) and persists. Three independent anti-fabrication layers, all real and
+all proven: the pure validator (Phase 2's 21 fixtures), the write path
+(this phase's retry-then-reject logic, unit-tested against the literal
+acceptance-test scenario -- a fabricated skill correctly produces
+`UNSUPPORTED_ENTITY` and, uncorrected, a `DOCUMENT_VALIDATION_FAILED`
+error carrying the violations), and a new DB trigger on `document_spans`
+(D40) proven against real Postgres by extending `verify-claims-integrity.mjs`
+exactly as `docs/VERIFICATION.md` had flagged it would need to be.
+
+Verified against real infrastructure end-to-end, not just unit-tested: the
+compiled app was booted against the live database with `LLM_MODE=replay`
+and no `DEEPSEEK_API_KEY` (this repo's actual `.env`), and a real
+`POST /documents/generate` against a real ingested Mixpanel job correctly
+read real emittable claims and failed with the expected cassette-miss
+error. A cassette was then hand-crafted once (as in Phase 4/6, and deleted
+immediately after for the same reason -- D27 -- since matching the real
+request hash necessarily embedded real claim data) to prove the full happy
+path: a real PDF (`file` confirms `PDF document, version 1.3`) and a real
+DOCX (`file` confirms `Microsoft Word 2007+`) were rendered and written to
+`data/generated/<ownerId>/`, and the resulting `documents`/`document_spans`
+rows were persisted and passed the new DB trigger for real. Crafting that
+cassette surfaced a second real bug, fixed the same session: the
+`v_emittable_claims` queries in both `gap-analysis` and `documents`
+ordered by `subject` alone, which has no tiebreaker for the real duplicate
+subjects in this operator's data (e.g. two "PostgreSQL" claims from two
+repos) -- fixed by ordering `subject, id` (D42).
+
+Known gaps, deliberately not blocking phase progression: no claim-by-claim
+diff UI in `apps/web` yet (the acceptance test's substance -- citation
+enforcement -- is proven at the API/DB level; a dashboard page to view a
+generated document's spans is real, scoped follow-up, not started); no S3/
+MinIO (D43 -- local disk is the deliberate, permanent choice per D9, not a
+stand-in); no custom font embedding (D39); documents are generated
+one-shot via a direct endpoint, not queued (matches this system's actual
+write volume, same reasoning as D16).
+
+**Note on Phase 9**: `apps/api`'s new `applications` module is the real
+state machine from PLAN.md -- `ApplicationsService` gates every status
+change against `APPLICATION_TRANSITIONS` (D44), and a mirrored DB trigger
+(`applications_validate_transition`) is the second, independent
+enforcement layer, proven against real Postgres by extending
+`verify-claims-integrity.mjs` again (7 new checks, following the exact
+"extend this script when that table lands" pattern `docs/VERIFICATION.md`
+set for `document_spans` in Phase 8). Approval (`drafted -> approved`)
+freezes an immutable snapshot: sha256 checksums of the actual rendered
+bytes read fresh off disk (D47), the deduped claim set cited, and the
+model/prompt-version/cassette-key that produced them (`documents.cassetteKey`,
+captured at generation time via a newly-exported `computeCassetteKey`, D46).
+
+Verified against real infrastructure end-to-end, not just unit-tested: the
+compiled app was booted against the live database, and a real application
+was created against the real Mixpanel job used in Phase 8's own
+verification, then walked through `discovered → matched → drafted →
+approved → applied` over real HTTP, reusing that phase's real, already-
+generated PDF/DOCX. The approval response's `snapshotChecksumPdf`/
+`snapshotChecksumDocx` were confirmed to exactly match an independent
+`sha256sum` of the actual files on disk -- PLAN.md's literal "snapshot
+byte-identical to the downloaded PDF" acceptance test, proven, not
+asserted. The illegal transition PLAN.md names explicitly
+(`applied → drafted`) was then confirmed rejected twice, independently: a
+`409 ILLEGAL_APPLICATION_TRANSITION` from the real HTTP endpoint (the
+service-level gate), and separately a raw SQL `UPDATE` as the app role,
+bypassing the service entirely, correctly refused by the DB trigger.
+
+One real migration wrinkle, fixed in place: `documents` already had one
+real row (Phase 8's own verification) when this phase added a `NOT NULL
+cassette_key` column to it -- a bare `ADD COLUMN ... NOT NULL` would have
+failed against that row, and the naive fix (a blind backfill `UPDATE`)
+silently affected zero rows under RLS (this table's RLS applies to the
+migrator role too, D-series precedent from Phase 4). Fixed by disabling
+RLS for the one backfill statement, immediately re-enabled by `sql/02-rls.sql`
+which runs unconditionally right after.
+
+Known gaps, deliberately not blocking phase progression (D48): no
+Greenhouse `questions=true` answer drafting (a genuinely separate feature,
+not exercised by this phase's acceptance test); no `apps/web` UI for the
+state machine yet (creating/transitioning an application is proven at the
+API/DB level; a dashboard page to drive it by hand is real, scoped
+follow-up); no automatic `discovered` creation when a job is ingested (an
+operator explicitly starts tracking a job today, matching this system's
+single-operator, manual-review scale).
 
 Known gap, deliberately not blocking phase progression: Phase 1's
 "Add-Work UI" deliverable (a page in `apps/web` to add a work entry and see
